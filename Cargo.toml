@@ -10,5 +10,25 @@ edition = "2021"
 members = [".", "migration"]
 
 [dependencies]
-sea-orm = { version = "0.11.0", features = [ "sqlx-mysql", "runtime-async-std-native-tls", "macros" ] }
-
+actix-web = "4.3.1"
+actix-web-flash-messages = { version = "0.4", features = ["cookies"] }
+actix-web-lab = "0.18"
+actix-session = { version = "0.7", features = ["redis-rs-tls-session"] }
+anyhow = "1"
+sea-orm = { version = "0.11.0", features = [ "with-time", "sqlx-mysql", "runtime-async-std-native-tls", "macros" ] }
+tracing = "0.1"
+chrono = "*"
+handlebars = { version="4.3.7" , features=["dir_source"]}
+thiserror = "1"
+uuid = { version = "1", features = ["v4", "serde"] }
+rand = { version = "0.8", features=["std_rng"] }
+argon2 = { version = "0.4", features = ["std"] }
+tracing-actix-web = "0.7"
+secrecy = { version = "0.8", features = ["serde"] }
+tracing-bunyan-formatter = "0.3"
+tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
+tracing-log = "0.1.1"
+#sqlx = { version = "0.6", default-features = false, features = ["runtime-actix-rustls", "macros", "postgres", "uuid", "chrono", "migrate", "offline"] }
+sqlx = { version = "0.6", default-features = false, features = ["runtime-async-std-native-tls", "macros", "postgres", "uuid", "chrono", "migrate", "offline"] }
+serde = "1.0.115"
+serde_json = "1"

@@ -8,8 +8,6 @@ pub struct Migration;
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         // Replace the sample below with your own migration scripts
-        //todo!();
-
         let table = Table::create()
             // Table
             .table(Post::Table)
@@ -36,6 +34,8 @@ impl MigrationTrait for Migration {
                     .on_delete(ForeignKeyAction::SetNull)
                     .on_update(ForeignKeyAction::Cascade),
             )
+            .col(ColumnDef::new(Post::Created).timestamp().not_null())
+            .col(ColumnDef::new(Post::Updated).timestamp().not_null())
             .to_owned();
         println!("{:?}", table.to_string(MysqlQueryBuilder));
         manager.create_table(table).await
@@ -43,8 +43,6 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         // Replace the sample below with your own migration scripts
-        //todo!();
-
         manager
             .drop_table(Table::drop().table(Post::Table).to_owned())
             .await
@@ -59,4 +57,6 @@ enum Post {
     Title,
     Description,
     CategoryId,
+    Created,
+    Updated,
 }
