@@ -1,11 +1,10 @@
-
 use crate::authentication::AuthError;
 use crate::authentication::{validate_credentials, Credentials};
 //use crate::routes::error_chain_fmt;
-use crate::utils::error_chain_fmt;
 use crate::session_state::TypedSession;
-use actix_web::http::header::ContentType;
+use crate::utils::error_chain_fmt;
 use actix_web::error::InternalError;
+use actix_web::http::header::ContentType;
 use actix_web::http::header::LOCATION;
 use actix_web::web;
 use actix_web::HttpResponse;
@@ -15,46 +14,25 @@ use actix_web_flash_messages::IncomingFlashMessages;
 use secrecy::Secret;
 use std::fmt::Write;
 
-//pub async fn login_form(flash_messages: IncomingFlashMessages) -> HttpResponse {
-pub async fn login_form() -> HttpResponse {
-//pub async fn login_form() -> HttpResponse {
-    let mut error_html = String::new();
-    //for m in flash_messages.iter() {
-    //    writeln!(error_html, "<p><i>{}</i></p>", m.content()).unwrap();
-    //}
+pub async fn login_form(
+    flash_messages: IncomingFlashMessages,
+    hbs: web::Data<handlebars::Handlebars<'_>>,
+) -> HttpResponse {
+    //pub async fn login_form() -> HttpResponse {
+    let mut flash_error = String::new();
+    for m in flash_messages.iter() {
+        //writeln!(error_html, "<p><i>{}</i></p>", m.content()).unwrap();
+        writeln!(flash_error, "{}", m.content()).unwrap();
+    }
+    let html = hbs
+        .render("login_form", &serde_json::json!({"error_html": flash_error}))
+        .map_err(actix_web::error::ErrorInternalServerError)
+        .unwrap();
+
     HttpResponse::Ok()
         .content_type(ContentType::html())
-        .body(format!(
-            r#"<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <title>Login</title>
-</head>
-<body>
-    {error_html}
-    <form action="/login" method="post">
-        <label>Username
-            <input
-                type="text"
-                placeholder="Enter Username"
-                name="username"
-            >
-        </label>
-        <label>Password
-            <input
-                type="password"
-                placeholder="Enter Password"
-                name="password"
-            >
-        </label>
-        <button type="submit">Login</button>
-    </form>
-</body>
-</html>"#,
-        ))
+        .body(html)
 }
-
 
 #[derive(serde::Deserialize, Debug)]
 pub struct FormData {
@@ -72,7 +50,6 @@ pub async fn login(
     db: web::Data<sea_orm::DatabaseConnection>,
     session: TypedSession,
 ) -> Result<HttpResponse, InternalError<LoginError>> {
-	tracing::info!(?form);
     let credentials = Credentials {
         username: form.0.username,
         password: form.0.password,
@@ -120,5 +97,3 @@ impl std::fmt::Debug for LoginError {
         error_chain_fmt(self, f)
     }
 }
-
-
