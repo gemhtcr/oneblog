@@ -12,10 +12,8 @@ use actix_web_flash_messages::FlashMessagesFramework;
 use secrecy::Secret;
 use secrecy::ExposeSecret;
 use actix_session::storage::RedisSessionStore;
-
-
+use actix_files::Files;
 use oneblog::*;
-
 use tracing::info;
 use tracing_actix_web::TracingLogger;
 
@@ -50,6 +48,7 @@ async fn main() -> Result<(), std::io::Error>{
             //.wrap(TracingLogger::default())
             .route("/login", web::get().to(route::login::login_form))
             .route("/login", web::post().to(route::login::login))
+            .service(Files::new("/assets", "assets/").show_files_listing())
             .app_data(web::Data::new(handlebars.clone()))
             .app_data(web::Data::new(db.clone()))
     })
