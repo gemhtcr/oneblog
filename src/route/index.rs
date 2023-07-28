@@ -15,8 +15,7 @@ pub async fn index(
 
     let posts = controller::post::all(&db).await.unwrap();
     let html = hbs
-        //.render("index", &serde_json::json!({"posts": posts}))
-        .render("index", &serde_json::json!({}))
+        .render("index", &serde_json::json!({"posts": posts}))
         .map_err(actix_web::error::ErrorInternalServerError)
         .unwrap();
     

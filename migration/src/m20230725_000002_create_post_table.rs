@@ -25,12 +25,12 @@ impl MigrationTrait for Migration {
             // Description
             .col(ColumnDef::new(Post::Description).string().not_null())
             // CategoryId
-            .col(ColumnDef::new(Post::CategoryId).integer().null())
+            .col(ColumnDef::new(Post::CategoryName).string().null())
             .foreign_key(
                 ForeignKey::create()
                     .name("fk_2e303c3a712662f1fc2a4d0aad6")
-                    .from(Post::Table, Post::CategoryId)
-                    .to(Category::Table, Category::Id)
+                    .from(Post::Table, Post::CategoryName)
+                    .to(Category::Table, Category::Name)
                     .on_delete(ForeignKeyAction::SetNull)
                     .on_update(ForeignKeyAction::Cascade),
             )
@@ -40,22 +40,22 @@ impl MigrationTrait for Migration {
         manager.create_table(table).await?;
         let insert = Query::insert()
             .into_table(Post::Table)
-            .columns([Post::Title, Post::Description, Post::CategoryId, Post::Created, Post::Updated])
-            .values_panic(["Title 1".into(), "description 1".into(), Some(1).into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
+            .columns([Post::Title, Post::Description, Post::CategoryName, Post::Created, Post::Updated])
+            .values_panic(["Title 1".into(), "description 1".into(), "Cat 1".into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
             .to_owned();
 
         manager.exec_stmt(insert).await?;
         let insert = Query::insert()
             .into_table(Post::Table)
-            .columns([Post::Title, Post::Description, Post::CategoryId, Post::Created, Post::Updated])
-            .values_panic(["Title 2".into(), "description 2".into(), Some(1).into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
+            .columns([Post::Title, Post::Description, Post::CategoryName, Post::Created, Post::Updated])
+            .values_panic(["Title 2".into(), "description 2".into(), "Cat 1".into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
             .to_owned();
 
         manager.exec_stmt(insert).await?;
         let insert = Query::insert()
             .into_table(Post::Table)
-            .columns([Post::Title, Post::Description, Post::CategoryId, Post::Created, Post::Updated])
-            .values_panic(["Title 3".into(), "description 3".into(), Some(1).into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
+            .columns([Post::Title, Post::Description, Post::CategoryName, Post::Created, Post::Updated])
+            .values_panic(["Title 3".into(), "description 3".into(), "Cat 1".into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
             .to_owned();
 
         manager.exec_stmt(insert).await?;
@@ -78,7 +78,7 @@ enum Post {
     Id,
     Title,
     Description,
-    CategoryId,
+    CategoryName,
     Created,
     Updated,
 }

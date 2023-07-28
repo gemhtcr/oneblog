@@ -9,18 +9,24 @@ pub async fn create(
     db: &DatabaseConnection,
     title: &str,
     description: &str,
-    category_id: Option<i32>,
+    category_name: Option<String>,
 ) -> Result<Model, DbErr> {
     ActiveModel {
         title: ActiveValue::Set(title.to_string()),
         description: ActiveValue::Set(description.to_string()),
-        category_id: ActiveValue::Set(category_id),
+        category_name: ActiveValue::Set(category_name),
         updated: ActiveValue::Set(chrono::offset::Utc::now()),
         created: ActiveValue::Set(chrono::offset::Utc::now()),
         ..Default::default()
     }
     .insert(db)
     .await
+}
+
+pub async fn count(
+    db: &DatabaseConnection
+) -> Result<u64, DbErr>{
+    Post::find().count(db).await
 }
 
 // find is to find by id
@@ -59,12 +65,12 @@ pub async fn cursor(db: &DatabaseConnection, cursor: u64, limit: u64) -> Result<
         .await
 }
 
-pub async fn update(db: &DatabaseConnection, post_id:i32, title: &str, description: &str, category_id: Option<i32>) -> Result<Model, DbErr> {
+pub async fn update(db: &DatabaseConnection, post_id:i32, title: &str, description: &str, category_name: Option<String>) -> Result<Model, DbErr> {
     ActiveModel {
         id: ActiveValue::Unchanged(post_id),
         title: ActiveValue::Set(title.to_string()),
         description: ActiveValue::Set(description.to_string()),
-        category_id: ActiveValue::Set(category_id),
+        category_name: ActiveValue::Set(category_name),
         updated: ActiveValue::Set(chrono::offset::Utc::now()),
         ..Default::default()
     }
@@ -90,7 +96,7 @@ pub async fn destroy(db: &DatabaseConnection, id: i32) -> Result<DeleteResult, D
         id: ActiveValue::Unchanged(1),
         title: ActiveValue::Set("abc".to_string()),
         description: ActiveValue::Set("des".to_string()),
-        category_id: ActiveValue::Set(None),
+        catgegory_name: ActiveValue::Set(None),
         updated: ActiveValue::Set(chrono::offset::Utc::now()),
         ..Default::default()
     };

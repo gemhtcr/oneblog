@@ -49,21 +49,6 @@ async fn main() -> Result<(), std::io::Error> {
     use sea_orm::ActiveValue;
     use sea_orm::EntityTrait;
 
-    let stmt = crate::post::ActiveModel {
-        id: ActiveValue::Unchanged(1),
-        title: ActiveValue::Set("abc".to_string()),
-        description: ActiveValue::Set("des".to_string()),
-        category_id: ActiveValue::Set(None),
-        updated: ActiveValue::Set(chrono::offset::Utc::now()),
-        ..Default::default()
-    };
-
-    //let r: <Post as sea_orm::entity::EntityTrait>::Model = Post::update(stmt);
-    //let mut r = Post::update(stmt);
-    //let stmt = r.query();
-    //let stmt = stmt.to_string(sea_orm::sea_query::MysqlQueryBuilder);
-    //info!(?stmt);
-
     HttpServer::new(move || {
         App::new()
             .wrap(message_framework.clone())

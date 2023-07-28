@@ -18,7 +18,7 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(Category::Name).string().not_null())
+                    .col(ColumnDef::new(Category::Name).string().unique_key().not_null())
                     .col(ColumnDef::new(Category::Created).timestamp().not_null())
                     .col(ColumnDef::new(Category::Updated).timestamp().not_null())
                     .to_owned(),
