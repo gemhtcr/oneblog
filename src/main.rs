@@ -57,6 +57,7 @@ async fn main() -> Result<(), std::io::Error> {
                 secret_key.clone(),
             ))
             .route("/", web::get().to(route::index::index))
+            .route("/posts/{post_id}", web::get().to(route::index::post_id))
             .service(
                 web::scope("/admin")
                     //.wrap(from_fn(authentication::middleware::reject_anonymous_users))
