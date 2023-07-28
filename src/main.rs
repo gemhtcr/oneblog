@@ -19,7 +19,7 @@ use secrecy::Secret;
 use tracing::info;
 use tracing_actix_web::TracingLogger;
 
-const DATABASE_URL: &str = "mysql://root@localhost:3306/oneblog";
+const DATABASE_URL: &str = "mysql://root@127.0.0.1:3306/oneblog";
 
 // admin/everythinghastostartsomewhere
 
@@ -71,10 +71,11 @@ async fn main() -> Result<(), std::io::Error> {
                 redis_store.clone(),
                 secret_key.clone(),
             ))
+            .route("/", web::get().to(route::index::index))
             .service(
                 web::scope("/admin")
                     //.wrap(from_fn(authentication::middleware::reject_anonymous_users))
-                    .route("/", web::get().to(route::admin::index::index))
+                    .route("", web::get().to(route::admin::index::index))
                     // edit
                     .route(
                         "/posts/{post_id}/edit",

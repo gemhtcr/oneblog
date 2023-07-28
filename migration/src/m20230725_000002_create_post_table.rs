@@ -37,8 +37,30 @@ impl MigrationTrait for Migration {
             .col(ColumnDef::new(Post::Created).timestamp().not_null())
             .col(ColumnDef::new(Post::Updated).timestamp().not_null())
             .to_owned();
-        println!("{:?}", table.to_string(MysqlQueryBuilder));
-        manager.create_table(table).await
+        manager.create_table(table).await?;
+        let insert = Query::insert()
+            .into_table(Post::Table)
+            .columns([Post::Title, Post::Description, Post::CategoryId, Post::Created, Post::Updated])
+            .values_panic(["Title 1".into(), "description 1".into(), Some(1).into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
+            .to_owned();
+
+        manager.exec_stmt(insert).await?;
+        let insert = Query::insert()
+            .into_table(Post::Table)
+            .columns([Post::Title, Post::Description, Post::CategoryId, Post::Created, Post::Updated])
+            .values_panic(["Title 2".into(), "description 2".into(), Some(1).into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
+            .to_owned();
+
+        manager.exec_stmt(insert).await?;
+        let insert = Query::insert()
+            .into_table(Post::Table)
+            .columns([Post::Title, Post::Description, Post::CategoryId, Post::Created, Post::Updated])
+            .values_panic(["Title 3".into(), "description 3".into(), Some(1).into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
+            .to_owned();
+
+        manager.exec_stmt(insert).await?;
+
+        Ok(())
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {

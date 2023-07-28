@@ -23,7 +23,14 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Category::Updated).timestamp().not_null())
                     .to_owned(),
             )
-            .await
+            .await?;
+        let insert = Query::insert()
+            .into_table(Category::Table)
+            .columns([Category::Name, Category::Created, Category::Updated])
+            .values_panic(["Cat 1".into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
+            .to_owned();
+
+        manager.exec_stmt(insert).await
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
