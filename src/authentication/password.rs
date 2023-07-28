@@ -121,10 +121,10 @@ pub async fn change_password(
     password: Secret<String>,
     db: &PgPool,
 ) -> Result<(), anyhow::Error> {
-    /*
     let password_hash = spawn_blocking_with_tracing(move || compute_password_hash(password))
         .await?
         .context("Failed to hash password")?;
+    /*
     sqlx::query!(
         r#"
         UPDATE users
@@ -138,10 +138,11 @@ pub async fn change_password(
     .await
     .context("Failed to change user's password in the database.")?;
     */
+    //controller::users::update().await.unwrap();
     Ok(())
 }
 
-fn compute_password_hash(password: Secret<String>) -> Result<Secret<String>, anyhow::Error> {
+pub fn compute_password_hash(password: Secret<String>) -> Result<Secret<String>, anyhow::Error> {
     let salt = SaltString::generate(&mut rand::thread_rng());
     let password_hash = Argon2::new(
         Algorithm::Argon2id,

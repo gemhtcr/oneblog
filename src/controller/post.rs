@@ -1,12 +1,26 @@
-use crate::Post;
 use crate::entities::post;
-use crate::entities::post::Model;
 pub use crate::entities::post::ActiveModel;
+use crate::entities::post::Model;
+use crate::entities::prelude::Post;
 use sea_orm::*;
 
 // insert is to insert a post
-pub async fn create(db: &DatabaseConnection, model: ActiveModel) -> Result<Model, DbErr> {
-    model.insert(db).await
+pub async fn create(
+    db: &DatabaseConnection,
+    title: &str,
+    description: &str,
+    category_id: Option<i32>,
+) -> Result<Model, DbErr> {
+    ActiveModel {
+        title: ActiveValue::Set(title.to_string()),
+        description: ActiveValue::Set(description.to_string()),
+        category_id: ActiveValue::Set(category_id),
+        updated: ActiveValue::Set(chrono::offset::Utc::now()),
+        created: ActiveValue::Set(chrono::offset::Utc::now()),
+        ..Default::default()
+    }
+    .insert(db)
+    .await
 }
 
 // find is to find by id
@@ -14,15 +28,50 @@ pub async fn find(db: &DatabaseConnection, id: i32) -> Result<Option<Model>, DbE
     Post::find_by_id(id).one(db).await
 }
 
-// all is to find all posts
+// all is to find all posts and order by updated timestamp
 pub async fn all(db: &DatabaseConnection) -> Result<Vec<Model>, DbErr> {
-    Post::find().all(db).await
+    Post::find()
+        .order_by_desc(post::Column::Updated)
+        .all(db)
+        .await
 }
 
-pub async fn update(db: &DatabaseConnection, active: ActiveModel) -> Result<Model, DbErr> {
-    active.update(db).await
+pub async fn offset_and_limit(
+    db: &DatabaseConnection,
+    limit: u64,
+    offset: u64,
+) -> Result<Vec<Model>, DbErr> {
+    Post::find()
+        .order_by_desc(post::Column::Updated)
+        .offset(offset)
+        .limit(limit)
+        .all(db)
+        .await
 }
-// delete is 
+
+pub async fn cursor(db: &DatabaseConnection, cursor: u64, limit: u64) -> Result<Vec<Model>, DbErr> {
+    Post::find()
+        .order_by_desc(post::Column::Updated)
+        .cursor_by(post::Column::Id)
+        .after(cursor)
+        .first(limit)
+        .all(db)
+        .await
+}
+
+pub async fn update(db: &DatabaseConnection, post_id:i32, title: &str, description: &str, category_id: Option<i32>) -> Result<Model, DbErr> {
+    ActiveModel {
+        id: ActiveValue::Unchanged(post_id),
+        title: ActiveValue::Set(title.to_string()),
+        description: ActiveValue::Set(description.to_string()),
+        category_id: ActiveValue::Set(category_id),
+        updated: ActiveValue::Set(chrono::offset::Utc::now()),
+        ..Default::default()
+    }
+    .update(db)
+    .await
+}
+// delete is
 pub async fn destroy(db: &DatabaseConnection, id: i32) -> Result<DeleteResult, DbErr> {
     ActiveModel {
         id: ActiveValue::Set(id), // The primary key must be set
@@ -31,3 +80,27 @@ pub async fn destroy(db: &DatabaseConnection, id: i32) -> Result<DeleteResult, D
     .delete(db)
     .await
 }
+/*
+    use sea_orm::query::QueryTrait;
+    use sea_orm::EntityTrait;
+    use sea_orm::ActiveValue;
+    use sea_orm::sea_query::QueryStatementBuilder;
+
+    let stmt = crate::post::ActiveModel {
+        id: ActiveValue::Unchanged(1),
+        title: ActiveValue::Set("abc".to_string()),
+        description: ActiveValue::Set("des".to_string()),
+        category_id: ActiveValue::Set(None),
+        updated: ActiveValue::Set(chrono::offset::Utc::now()),
+        ..Default::default()
+    };
+
+    //let r: <Post as sea_orm::entity::EntityTrait>::Model = Post::update(stmt);
+    let mut r= Post::update(stmt);
+    let stmt = r.query();
+    let stmt = stmt.to_string(sea_orm::sea_query::MysqlQueryBuilder);
+    info!(?stmt);
+
+
+
+*/

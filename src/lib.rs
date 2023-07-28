@@ -5,4 +5,5 @@ pub mod route;
 pub mod utils;
 pub mod session_state;
 pub mod telemetry;
+pub mod controller;
 
