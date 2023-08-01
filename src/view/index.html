@@ -340,7 +340,7 @@
 		  <nav aria-label="...">
 			<ul class="pagination">
 			{{#each pages}}
-			  <li class="page-item"><a class="page-link {{#if this.active}}active{{/if}} {{#if this.disabled}}disabled{{/if}}" href="{{#if this.disabled}}#{{else}}./posts/page/{{this.page}}{{/if}}">{{this.display}}</a></li>
+			  <li class="page-item"><a class="page-link {{#if this.active}}active{{/if}} {{#if this.disabled}}disabled{{/if}}" href="{{#if this.disabled}}#{{else}}/posts/page/{{this.page}}{{/if}}">{{this.display}}</a></li>
 			{{/each}}
 			</ul>
 		  </nav><!-- End Disabled and active states -->

@@ -58,6 +58,7 @@ async fn main() -> Result<(), std::io::Error> {
             ))
             .route("/", web::get().to(route::index::index))
             .route("/posts/{post_id}", web::get().to(route::index::post_id))
+            .route("/posts/page/{page_number}", web::get().to(route::index::page))
             .service(
                 web::scope("/admin")
                     //.wrap(from_fn(authentication::middleware::reject_anonymous_users))
