@@ -37,18 +37,19 @@ pub async fn find(db: &DatabaseConnection, id: i32) -> Result<Option<Model>, DbE
 // all is to find all posts and order by updated timestamp
 pub async fn all(db: &DatabaseConnection) -> Result<Vec<Model>, DbErr> {
     Post::find()
-        .order_by_desc(post::Column::Updated)
+        //.order_by_desc(post::Column::Updated)
         .all(db)
         .await
 }
 
 pub async fn offset_and_limit(
     db: &DatabaseConnection,
-    limit: u64,
     offset: u64,
+    limit: u64,
 ) -> Result<Vec<Model>, DbErr> {
+    tracing::info!(?limit, ?offset);
     Post::find()
-        .order_by_desc(post::Column::Updated)
+        //.order_by_desc(post::Column::Updated)
         .offset(offset)
         .limit(limit)
         .all(db)

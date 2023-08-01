@@ -27,9 +27,15 @@ impl MigrationTrait for Migration {
         let insert = Query::insert()
             .into_table(Category::Table)
             .columns([Category::Name, Category::Created, Category::Updated])
-            .values_panic(["Cat 1".into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
+            .values_panic(["Category1".into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
             .to_owned();
+        manager.exec_stmt(insert).await?;
 
+        let insert = Query::insert()
+            .into_table(Category::Table)
+            .columns([Category::Name, Category::Created, Category::Updated])
+            .values_panic(["Category2".into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
+            .to_owned();
         manager.exec_stmt(insert).await
     }
 

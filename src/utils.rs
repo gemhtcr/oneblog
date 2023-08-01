@@ -37,3 +37,61 @@ pub fn error_chain_fmt(
     Ok(())
 }
 
+#[derive(Debug, serde::Serialize)]
+pub struct Page {
+    page: i32,
+    display: String, // '<', '>', 1, 2, ....100 etc
+    active: bool,
+    disabled: bool,
+}
+
+// 1-indexed
+pub fn paginate(
+    total: usize,
+    per_page: usize,
+    active: usize,
+    previous: Option<String>,
+    next: Option<String>,
+) -> Vec<Page> {
+    let total_pages = (total + per_page - 1) / per_page;
+    let mut pages = (1..=total_pages)
+        .into_iter()
+        .map(|index| Page {
+            page: index as i32,
+            display: index.to_string(),
+            active: false,
+            disabled: false,
+        })
+        .collect::<Vec<_>>();
+    pages[active - 1].active = true;
+    tracing::info!(?active);
+
+    // add Previous
+    if let Some(symbol) = previous {
+        pages.insert(
+            0,
+            Page {
+                page: if active == 1 { -1 } else { active as i32 - 1 },
+                display: symbol,
+                active: false,
+                disabled: active == 1,
+            },
+        );
+    }
+
+    // add Next
+    if let Some(symbol) = next {
+        pages.push(Page {
+            page: if active == total_pages {
+                -1
+            } else {
+                active as i32 + 1
+            },
+            display: symbol,
+            active: false,
+            disabled: active == total_pages,
+        });
+    }
+
+    pages
+}

@@ -41,23 +41,29 @@ impl MigrationTrait for Migration {
         let insert = Query::insert()
             .into_table(Post::Table)
             .columns([Post::Title, Post::Description, Post::CategoryName, Post::Created, Post::Updated])
-            .values_panic(["Title 1".into(), "description 1".into(), "Cat 1".into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
+            .values_panic(["Title 1".into(), "description 1".into(), "Category1".into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
             .to_owned();
-
         manager.exec_stmt(insert).await?;
+
         let insert = Query::insert()
             .into_table(Post::Table)
             .columns([Post::Title, Post::Description, Post::CategoryName, Post::Created, Post::Updated])
-            .values_panic(["Title 2".into(), "description 2".into(), "Cat 1".into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
+            .values_panic(["Title 2".into(), "description 2".into(), "Category2".into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
             .to_owned();
-
         manager.exec_stmt(insert).await?;
+
         let insert = Query::insert()
             .into_table(Post::Table)
             .columns([Post::Title, Post::Description, Post::CategoryName, Post::Created, Post::Updated])
-            .values_panic(["Title 3".into(), "description 3".into(), "Cat 1".into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
+            .values_panic(["Title 3".into(), "description 3".into(), "Category1".into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
             .to_owned();
+        manager.exec_stmt(insert).await?;
 
+        let insert = Query::insert()
+            .into_table(Post::Table)
+            .columns([Post::Title, Post::Description, Post::CategoryName, Post::Created, Post::Updated])
+            .values_panic(["Title 4".into(), "description 4".into(), "Category1".into(), chrono::offset::Utc::now().into(), chrono::offset::Utc::now().into()])
+            .to_owned();
         manager.exec_stmt(insert).await?;
 
         Ok(())
