@@ -2189,6 +2189,7 @@ dependencies = [
  "anyhow",
  "argon2",
  "chrono",
+ "futures",
  "handlebars",
  "rand",
  "sea-orm",

@@ -64,7 +64,6 @@ pub fn paginate(
         })
         .collect::<Vec<_>>();
     pages[active - 1].active = true;
-    tracing::info!(?active);
 
     // add Previous
     if let Some(symbol) = previous {

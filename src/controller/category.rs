@@ -1,7 +1,11 @@
 use crate::entities::category;
 use crate::entities::category::ActiveModel;
-use crate::entities::category::Model;
-use crate::entities::prelude::Category;
+pub use crate::entities::category::Model;
+use crate::entities::post;
+pub use crate::entities::prelude::Category;
+use crate::entities::prelude::Post;
+use futures::stream::StreamExt;
+use futures::FutureExt;
 use sea_orm::*;
 
 // Category controller
@@ -29,6 +33,48 @@ pub async fn all(db: &DatabaseConnection) -> Result<Vec<Model>, DbErr> {
         .order_by_desc(category::Column::Updated)
         .all(db)
         .await
+}
+
+pub async fn posts(db: &DatabaseConnection) -> Vec<(category::Model, Vec<post::Model>)>{
+    Category::find()
+        .find_with_related(Post)
+        .all(db)
+        .await.unwrap()
+}
+
+pub async fn posts_count(db: &DatabaseConnection) -> Vec<(Model, u64)>{
+    let categories = Category::find().all(db).await.unwrap();
+    let cnt = categories[0].find_related(Post).count(db).await.unwrap();
+    let ret = categories
+        .into_iter()
+        .map(|cat| {
+            async move {
+                let post_count = cat.find_related(Post).count(db).await.unwrap_or(0);
+                (cat, post_count)
+            }
+            .boxed()
+        })
+        .collect::<futures::stream::FuturesOrdered<_>>()
+        .collect::<Vec<_>>()
+        .await;
+
+    ret
+}
+
+pub async fn find_posts(db: &DatabaseConnection, id: i32) -> Result<(Model, Vec<post::Model>),DbErr> {
+    find_posts_with(db, id, None, None).await
+}
+
+pub async fn find_posts_with(db: &DatabaseConnection, id: i32, offset:Option<u64>, limit: Option<u64>) -> Result<(Model, Vec<post::Model>),DbErr> {
+    let cat = find(db, id).await?.unwrap();
+    let ret = cat.find_related(Post).offset(offset).limit(limit).all(db).await?;
+    Ok((cat, ret))
+}
+
+pub async fn find_posts_count(db: &DatabaseConnection, id: i32) -> Result<u64, DbErr> {
+    let cat = find(db, id).await?.unwrap();
+    let ret = cat.find_related(Post).count(db).await?;
+    Ok(ret)
 }
 
 // offset_and_limit is to get paginated data based on offset and limit

@@ -47,7 +47,6 @@ pub async fn offset_and_limit(
     offset: u64,
     limit: u64,
 ) -> Result<Vec<Model>, DbErr> {
-    tracing::info!(?limit, ?offset);
     Post::find()
         //.order_by_desc(post::Column::Updated)
         .offset(offset)

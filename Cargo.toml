@@ -16,6 +16,7 @@ actix-web-lab = "0.18"
 actix-files = "*"
 actix-session = { version = "0.7", features = ["redis-rs-tls-session"] }
 anyhow = "1"
+futures = "*"
 sea-orm = { version = "0.12.0", features = [ "with-chrono", "sqlx-mysql", "runtime-async-std-native-tls", "macros" ] }
 tracing = "0.1"
 chrono = "*"

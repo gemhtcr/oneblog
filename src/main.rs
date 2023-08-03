@@ -21,8 +21,6 @@ use tracing_actix_web::TracingLogger;
 
 const DATABASE_URL: &str = "mysql://root@127.0.0.1:3306/oneblog";
 
-// admin/everythinghastostartsomewhere
-
 #[actix_web::main]
 async fn main() -> Result<(), std::io::Error> {
     //tracing_subscriber::fmt::init();
@@ -57,8 +55,10 @@ async fn main() -> Result<(), std::io::Error> {
                 secret_key.clone(),
             ))
             .route("/", web::get().to(route::index::index))
+            .route("/index.html", web::get().to(route::index::index))
             .route("/posts/{post_id}", web::get().to(route::index::post_id))
-            .route("/posts/page/{page_number}", web::get().to(route::index::page))
+            .route("/posts/page/{page_number}", web::get().to(route::index::posts))
+            .route("/posts/category/{category_id}/page/{page_number}", web::get().to(route::index::posts_with_category))
             .service(
                 web::scope("/admin")
                     //.wrap(from_fn(authentication::middleware::reject_anonymous_users))
@@ -84,7 +84,7 @@ async fn main() -> Result<(), std::io::Error> {
             //.wrap(TracingLogger::default())
             .route("/login", web::get().to(route::login::login_form))
             .route("/login", web::post().to(route::login::login))
-            .service(Files::new("/assets", "assets/").show_files_listing())
+            .service(actix_files::Files::new("/assets", "assets/").show_files_listing())
             .app_data(web::Data::new(handlebars.clone()))
             .app_data(web::Data::new(db.clone()))
     })
