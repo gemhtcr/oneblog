@@ -31,7 +31,13 @@ pub async fn index(
     let html = hbs
         .render(
             "index",
-            &serde_json::json!({"posts": posts, "pages": pages, "sidebar": "_sidebar", "categories": categories}),
+            &serde_json::json!({
+                "header": "_header",
+                "sidebar": "_sidebar",
+                "posts": posts,
+                "pages": pages,
+                "categories": categories
+            }),
         )
         .map_err(actix_web::error::ErrorInternalServerError)
         .unwrap();
@@ -66,7 +72,13 @@ pub async fn posts(
     let html = hbs
         .render(
             "index",
-            &serde_json::json!({"sidebar":"_sidebar", "posts": posts, "pages": pages, "categories": categories}),
+            &serde_json::json!({
+                "header": "_header", 
+                "sidebar":"_sidebar", 
+                "posts": posts, 
+                "pages": pages, 
+                "categories": categories
+            }),
         )
         .map_err(actix_web::error::ErrorInternalServerError)
         .unwrap();
@@ -128,8 +140,15 @@ pub async fn post_id(
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
     let post = controller::post::find(&db, *post_id).await.unwrap();
 
+    let categories = controller::category::posts_count(&db).await;
     let html = hbs
-        .render("post_id", &serde_json::json!({"post": post}))
+        .render("post_id", &serde_json::json!(
+                {
+                    "header":"_header", 
+                    "sidebar":"_sidebar", 
+                    "categories": categories,
+                    "post": post,
+                }))
         .map_err(actix_web::error::ErrorInternalServerError)
         .unwrap();
 
