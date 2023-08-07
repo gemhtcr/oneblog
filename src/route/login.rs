@@ -106,3 +106,4 @@ impl std::fmt::Debug for LoginError {
         error_chain_fmt(self, f)
     }
 }
+
