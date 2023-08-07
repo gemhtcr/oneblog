@@ -23,9 +23,7 @@ pub async fn create(
     .await
 }
 
-pub async fn count(
-    db: &DatabaseConnection
-) -> Result<u64, DbErr>{
+pub async fn count(db: &DatabaseConnection) -> Result<u64, DbErr> {
     Post::find().count(db).await
 }
 
@@ -65,7 +63,13 @@ pub async fn cursor(db: &DatabaseConnection, cursor: u64, limit: u64) -> Result<
         .await
 }
 
-pub async fn update(db: &DatabaseConnection, post_id:i32, title: &str, description: &str, category_name: Option<String>) -> Result<Model, DbErr> {
+pub async fn update(
+    db: &DatabaseConnection,
+    post_id: i32,
+    title: &str,
+    description: &str,
+    category_name: Option<String>,
+) -> Result<Model, DbErr> {
     ActiveModel {
         id: ActiveValue::Unchanged(post_id),
         title: ActiveValue::Set(title.to_string()),

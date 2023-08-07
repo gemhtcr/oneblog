@@ -9,7 +9,6 @@ pub async fn edit_form(
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
-    
     todo!()
 }
 
@@ -70,8 +69,13 @@ pub async fn new(
     form: web::Form<NewFormData>,
     db: web::Data<sea_orm::DatabaseConnection>,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
-    let _model = controller::post::create(&db, &form.title, &form.description, form.category_name.to_owned())
-        .await
-        .unwrap();
+    let _model = controller::post::create(
+        &db,
+        &form.title,
+        &form.description,
+        form.category_name.to_owned(),
+    )
+    .await
+    .unwrap();
     Ok(utils::see_other("/admin"))
 }

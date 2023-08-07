@@ -57,8 +57,14 @@ async fn main() -> Result<(), std::io::Error> {
             .route("/", web::get().to(route::index::index))
             .route("/index.html", web::get().to(route::index::index))
             .route("/posts/{post_id}", web::get().to(route::index::post_id))
-            .route("/posts/page/{page_number}", web::get().to(route::index::posts))
-            .route("/posts/category/{category_id}/page/{page_number}", web::get().to(route::index::posts_with_category))
+            .route(
+                "/posts/page/{page_number}",
+                web::get().to(route::index::posts),
+            )
+            .route(
+                "/posts/category/{category_id}/page/{page_number}",
+                web::get().to(route::index::posts_with_category),
+            )
             .service(
                 web::scope("/admin")
                     //.wrap(from_fn(authentication::middleware::reject_anonymous_users))
@@ -81,10 +87,7 @@ async fn main() -> Result<(), std::io::Error> {
                         "/posts/{post_id}",
                         web::delete().to(route::admin::post::delete),
                     )
-                    .route(
-                        "/logout",
-                        web::get().to(route::admin::logout::logout),
-                    ),
+                    .route("/logout", web::get().to(route::admin::logout::logout)),
             )
             //.wrap(TracingLogger::default())
             .route("/login", web::get().to(route::login::login_form))

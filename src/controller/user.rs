@@ -1,7 +1,7 @@
-pub use crate::entities::users::ActiveModel;
 use crate::authentication;
 use crate::entities::prelude::Users;
 use crate::entities::users;
+pub use crate::entities::users::ActiveModel;
 use crate::entities::users::Model;
 use sea_orm::*;
 use secrecy::ExposeSecret;
@@ -48,4 +48,3 @@ pub async fn destroy(db: &DatabaseConnection, uuid: uuid::Uuid) -> Result<Delete
     .delete(db)
     .await
 }
-

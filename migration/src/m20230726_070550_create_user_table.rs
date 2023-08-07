@@ -19,14 +19,19 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(Users::Username).string().not_null().unique_key())
+                    .col(
+                        ColumnDef::new(Users::Username)
+                            .string()
+                            .not_null()
+                            .unique_key(),
+                    )
                     .col(ColumnDef::new(Users::PasswordHash).string().not_null())
                     .to_owned(),
             )
             .await?;
 
-		let db = manager.get_connection();
-		let stmt = sea_orm::Statement::from_sql_and_values(
+        let db = manager.get_connection();
+        let stmt = sea_orm::Statement::from_sql_and_values(
 			manager.get_database_backend(),
 			r#"INSERT INTO `users` (`user_id`, `username`, `password_hash`) VALUES(?, ?, ?)"#,
 			[
@@ -35,9 +40,9 @@ impl MigrationTrait for Migration {
                 "$argon2id$v=19$m=15000,t=2,p=1$PQmIUC+TNBPgeUwipUHxzQ$9Fi4antDN1jpGK7wU+TQOY9nKcldj8par4TXhdsQr6Q".into()
 			],
 		);
-		db.execute(stmt).await?;
+        db.execute(stmt).await?;
 
-		Ok(())
+        Ok(())
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {

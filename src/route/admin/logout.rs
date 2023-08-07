@@ -12,4 +12,3 @@ pub async fn logout(session: TypedSession) -> Result<HttpResponse, actix_web::Er
         Ok(see_other("/login"))
     }
 }
-

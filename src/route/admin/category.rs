@@ -1,10 +1,10 @@
-use actix_web::web;
 use crate::controller::category;
+use actix_web::web;
 
 // GET admin/categories
 pub async fn index(
     db: web::Data<sea_orm::DatabaseConnection>,
-) -> Result<actix_web::HttpResponse, actix_web::Error>{
+) -> Result<actix_web::HttpResponse, actix_web::Error> {
     todo!()
 }
 
@@ -17,7 +17,7 @@ pub struct Pagination {
 pub async fn page(
     pagination: web::Path<Pagination>,
     db: web::Data<sea_orm::DatabaseConnection>,
-) -> Result<actix_web::HttpResponse, actix_web::Error>{
+) -> Result<actix_web::HttpResponse, actix_web::Error> {
     todo!()
 }
 
@@ -25,7 +25,7 @@ pub async fn page(
 pub async fn new(
     name: web::Form<String>,
     db: web::Data<sea_orm::DatabaseConnection>,
-) -> Result<actix_web::HttpResponse, actix_web::Error>{
+) -> Result<actix_web::HttpResponse, actix_web::Error> {
     todo!()
 }
 
@@ -33,7 +33,7 @@ pub async fn new(
 pub async fn edit(
     category_id: web::Form<String>,
     db: web::Data<sea_orm::DatabaseConnection>,
-) -> Result<actix_web::HttpResponse, actix_web::Error>{
+) -> Result<actix_web::HttpResponse, actix_web::Error> {
     todo!()
 }
 
@@ -41,6 +41,6 @@ pub async fn edit(
 pub async fn delete(
     category_id: web::Form<String>,
     db: web::Data<sea_orm::DatabaseConnection>,
-) -> Result<actix_web::HttpResponse, actix_web::Error>{
+) -> Result<actix_web::HttpResponse, actix_web::Error> {
     todo!()
 }

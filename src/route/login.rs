@@ -25,13 +25,15 @@ pub async fn login_form(
     //let r = crate::authentication::password::verify_password_hash(r, Secret::new("admin".to_string()));
     //tracing::info!("password = {:?}", r);
 
-
     for m in flash_messages.iter() {
         //writeln!(error_html, "<p><i>{}</i></p>", m.content()).unwrap();
         writeln!(flash_error, "{}", m.content()).unwrap();
     }
     let html = hbs
-        .render("login_form", &serde_json::json!({"error_html": flash_error}))
+        .render(
+            "login_form",
+            &serde_json::json!({"error_html": flash_error}),
+        )
         .map_err(actix_web::error::ErrorInternalServerError)
         .unwrap();
 
@@ -61,7 +63,11 @@ pub async fn login(
         password: form.0.password,
     };
     use secrecy::ExposeSecret;
-    tracing::info!("====== {}:{}", credentials.username, credentials.password.expose_secret());
+    tracing::info!(
+        "====== {}:{}",
+        credentials.username,
+        credentials.password.expose_secret()
+    );
     tracing::Span::current().record("username", &tracing::field::display(&credentials.username));
     match validate_credentials(credentials, &db).await {
         Ok(user_id) => {
@@ -106,4 +112,3 @@ impl std::fmt::Debug for LoginError {
         error_chain_fmt(self, f)
     }
 }
-

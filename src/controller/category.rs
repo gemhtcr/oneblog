@@ -35,14 +35,15 @@ pub async fn all(db: &DatabaseConnection) -> Result<Vec<Model>, DbErr> {
         .await
 }
 
-pub async fn posts(db: &DatabaseConnection) -> Vec<(category::Model, Vec<post::Model>)>{
+pub async fn posts(db: &DatabaseConnection) -> Vec<(category::Model, Vec<post::Model>)> {
     Category::find()
         .find_with_related(Post)
         .all(db)
-        .await.unwrap()
+        .await
+        .unwrap()
 }
 
-pub async fn posts_count(db: &DatabaseConnection) -> Vec<(Model, u64)>{
+pub async fn posts_count(db: &DatabaseConnection) -> Vec<(Model, u64)> {
     let categories = Category::find().all(db).await.unwrap();
     let cnt = categories[0].find_related(Post).count(db).await.unwrap();
     let ret = categories
@@ -61,13 +62,26 @@ pub async fn posts_count(db: &DatabaseConnection) -> Vec<(Model, u64)>{
     ret
 }
 
-pub async fn find_posts(db: &DatabaseConnection, id: i32) -> Result<(Model, Vec<post::Model>),DbErr> {
+pub async fn find_posts(
+    db: &DatabaseConnection,
+    id: i32,
+) -> Result<(Model, Vec<post::Model>), DbErr> {
     find_posts_with(db, id, None, None).await
 }
 
-pub async fn find_posts_with(db: &DatabaseConnection, id: i32, offset:Option<u64>, limit: Option<u64>) -> Result<(Model, Vec<post::Model>),DbErr> {
+pub async fn find_posts_with(
+    db: &DatabaseConnection,
+    id: i32,
+    offset: Option<u64>,
+    limit: Option<u64>,
+) -> Result<(Model, Vec<post::Model>), DbErr> {
     let cat = find(db, id).await?.unwrap();
-    let ret = cat.find_related(Post).offset(offset).limit(limit).all(db).await?;
+    let ret = cat
+        .find_related(Post)
+        .offset(offset)
+        .limit(limit)
+        .all(db)
+        .await?;
     Ok((cat, ret))
 }
 

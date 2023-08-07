@@ -1,4 +1,3 @@
-pub mod post;
 pub mod category;
+pub mod post;
 pub mod user;
-

@@ -1,3 +1,5 @@
+use crate::controller;
+use crate::utils;
 use actix_web::error::InternalError;
 use actix_web::http::header::ContentType;
 use actix_web::http::header::LOCATION;
@@ -5,8 +7,6 @@ use actix_web::web;
 use actix_web::HttpResponse;
 use actix_web_flash_messages::FlashMessage;
 use actix_web_flash_messages::IncomingFlashMessages;
-use crate::utils;
-use crate::controller;
 
 // GET /admin/dashboard
 pub async fn index(
