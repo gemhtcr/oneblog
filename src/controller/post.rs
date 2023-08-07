@@ -35,7 +35,7 @@ pub async fn find(db: &DatabaseConnection, id: i32) -> Result<Option<Model>, DbE
 // all is to find all posts and order by updated timestamp
 pub async fn all(db: &DatabaseConnection) -> Result<Vec<Model>, DbErr> {
     Post::find()
-        //.order_by_desc(post::Column::Updated)
+        .order_by_desc(post::Column::Updated)
         .all(db)
         .await
 }

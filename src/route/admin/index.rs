@@ -8,11 +8,18 @@ use actix_web::HttpResponse;
 use actix_web_flash_messages::FlashMessage;
 use actix_web_flash_messages::IncomingFlashMessages;
 
+#[derive(serde::Serialize, serde::Deserialize)]
+struct MyFlashMessage{
+    content: String,
+    level: String,
+} 
+
 // GET /admin/dashboard
 pub async fn index(
     mut per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
+    flash_messages: IncomingFlashMessages,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
     let counts = controller::post::count(&db).await.unwrap();
@@ -23,6 +30,13 @@ pub async fn index(
         Some("<".to_string()),
         Some(">".to_string()),
     );
+    
+    let alerts = flash_messages.iter().map(|msg| {
+        MyFlashMessage {
+            content: msg.content().to_string(),
+            level: msg.level().to_string(),
+        }
+    }).collect::<Vec<_>>();
     let posts = controller::post::offset_and_limit(&db, 0, per_page as u64)
         .await
         .unwrap();
@@ -36,7 +50,8 @@ pub async fn index(
                 "sidebar": "_sidebar",
                 "posts": posts,
                 "pages": pages,
-                "categories": categories
+                "categories": categories,
+                "alerts": alerts,
             }),
         )
         .map_err(actix_web::error::ErrorInternalServerError)
@@ -46,3 +61,4 @@ pub async fn index(
         .content_type(ContentType::html())
         .body(html))
 }
+

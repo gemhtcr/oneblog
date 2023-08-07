@@ -2,6 +2,7 @@ use crate::controller;
 use crate::controller::post;
 use crate::utils;
 use actix_web::web;
+use actix_web_flash_messages::FlashMessage;
 
 // GET /admin/posts/{post_id}/edit
 pub async fn edit_form(
@@ -39,11 +40,20 @@ pub async fn edit(
 }
 
 // DELETE /admin/posts/{post_id}
+//pub async fn delete(
+//    post_id: web::Form<i32>,
+//    db: web::Data<sea_orm::DatabaseConnection>,
+//) -> Result<actix_web::HttpResponse, actix_web::Error> {
+//    let _ret = controller::post::destroy(&db, *post_id).await.unwrap();
+//    Ok(utils::see_other("/admin"))
+//}
+
 pub async fn delete(
-    post_id: web::Form<i32>,
+    post_id: web::Path<i32>,
     db: web::Data<sea_orm::DatabaseConnection>,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
-    let _ret = controller::post::destroy(&db, *post_id).await.unwrap();
+    //let _ret = controller::post::destroy(&db, *post_id).await.unwrap();
+    FlashMessage::success("Delete a post with success").send();
     Ok(utils::see_other("/admin"))
 }
 

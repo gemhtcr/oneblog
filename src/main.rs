@@ -68,6 +68,7 @@ async fn main() -> Result<(), std::io::Error> {
             .service(
                 web::scope("/admin")
                     //.wrap(from_fn(authentication::middleware::reject_anonymous_users))
+                    .route("", web::get().to(route::admin::index::index))
                     .route("/", web::get().to(route::admin::index::index))
                     .route("/dashboard", web::get().to(route::admin::index::index))
                     // edit
@@ -84,8 +85,8 @@ async fn main() -> Result<(), std::io::Error> {
                     .route("/posts", web::post().to(route::admin::post::new))
                     // delete
                     .route(
-                        "/posts/{post_id}",
-                        web::delete().to(route::admin::post::delete),
+                        "/posts/{post_id}/delete",
+                        web::get().to(route::admin::post::delete),
                     )
                     .route("/logout", web::get().to(route::admin::logout::logout)),
             )

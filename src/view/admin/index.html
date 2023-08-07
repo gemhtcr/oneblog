@@ -52,30 +52,64 @@
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item active">Home</li>
+          <li class="breadcrumb-item active">Posts</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
 
     <section class="section">
       <div class="row align-items-top">
-        <div class="col-lg-6">
-
-          <!-- Card with titles, buttons, and links -->
-          {{#each posts}}
-          <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">{{this.title}}</h5>
-                <h6 class="card-subtitle mb-2 text-muted">{{this.category_name}}</h6>
-                <p class="card-text">{{this.description}}</p>
-                <p class="card-text"><a href="/posts/{{this.id}}" class="btn btn-primary">More</a></p>
-            </div>
-          </div><!-- End Card with titles, buttons, and links -->
-          {{/each}}
+		{{#each alerts}}
+		<div class="alert alert-{{this.level}} alert-dismissible fade show" role="alert">
+            {{this.content}}
+			<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+		{{/each}}
+        <div class="col-lg-12">
+		<div class="card-body">
+              <h5 class="card-title">Posts</h5>
+		      <button type="button" class="btn btn-success">+New</button>
+              <!-- Table with stripped rows -->
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Body</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Updated</th>
+                    <th scope="col">Operations</th>
+                  </tr>
+                </thead>
+                <tbody>
+					{{#each posts}}
+					  <tr>
+						<th scope="row">{{@index}}</th>
+						<td>{{this.title}}</td>
+						<td>{{this.description}}</td>
+						<td>{{this.category_name}}</td>
+						<td>{{this.updated}}</td>
+						<td>
+							<div class="btn-group" role="group" aria-label="Basic mixed styles example">
+								<button type="button" class="btn btn-warning">
+									<a href="/admin/posts/{{this.id}}">Edit</a>
+								</button>
+								<button type="button" class="btn btn-danger">
+									<a href="/admin/posts/{{this.id}}/delete">Delete</a>
+								</button>
+							</div>
+						</td>
+					  </tr>
+					{{/each}}
+                </tbody>
+              </table>
+              <!-- End Table with stripped rows -->
+        </div>
 
 		  <nav aria-label="...">
 			<ul class="pagination">
 			{{#each pages}}
-			  <li class="page-item"><a class="page-link {{#if this.active}}active{{/if}} {{#if this.disabled}}disabled{{/if}}" href="{{#if this.disabled}}#{{else}}/posts/page/{{this.page}}{{/if}}">{{this.display}}</a></li>
+			  <li class="page-item"><a class="page-link {{#if this.active}}active{{/if}} {{#if this.disabled}}disabled{{/if}}" href="{{#if this.disabled}}#{{else}}/admin/posts/page/{{this.page}}{{/if}}">{{this.display}}</a></li>
 			{{/each}}
 			</ul>
 		  </nav><!-- End Disabled and active states -->
