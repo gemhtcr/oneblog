@@ -20,7 +20,7 @@ futures = "*"
 sea-orm = { version = "0.12.0", features = [ "with-chrono", "sqlx-mysql", "runtime-async-std-native-tls", "macros" ] }
 tracing = "0.1"
 chrono = "*"
-handlebars = { version="4.3.7" , features=["dir_source"]}
+handlebars = { version="4.3.7" , features=["dir_source", "script_helper"]}
 thiserror = "1"
 uuid = { version = "1", features = ["v4", "serde"] }
 rand = { version = "0.8", features=["std_rng"] }

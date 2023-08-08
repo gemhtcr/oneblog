@@ -47,6 +47,10 @@ async fn main() -> Result<(), std::io::Error> {
     use sea_orm::ActiveValue;
     use sea_orm::EntityTrait;
 
+    //let handlebars = crate::Handlebars::new();
+    use handlebars::handlebars_helper;
+    use serde_json::Value as Json;
+
     HttpServer::new(move || {
         App::new()
             .wrap(message_framework.clone())
@@ -78,10 +82,7 @@ async fn main() -> Result<(), std::io::Error> {
                     )
                     .route("/posts/{post_id}", web::post().to(route::admin::post::edit))
                     // new
-                    .route(
-                        "/posts/{post_id}/new",
-                        web::get().to(route::admin::post::new_form),
-                    )
+                    .route("/posts/new", web::get().to(route::admin::post::new_form))
                     .route("/posts", web::post().to(route::admin::post::new))
                     // delete
                     .route(

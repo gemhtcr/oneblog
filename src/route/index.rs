@@ -159,5 +159,3 @@ pub async fn post_id(
         .content_type(ContentType::html())
         .body(html))
 }
-
-

@@ -9,10 +9,10 @@ use actix_web_flash_messages::FlashMessage;
 use actix_web_flash_messages::IncomingFlashMessages;
 
 #[derive(serde::Serialize, serde::Deserialize)]
-struct MyFlashMessage{
+struct MyFlashMessage {
     content: String,
     level: String,
-} 
+}
 
 // GET /admin/dashboard
 pub async fn index(
@@ -30,13 +30,14 @@ pub async fn index(
         Some("<".to_string()),
         Some(">".to_string()),
     );
-    
-    let alerts = flash_messages.iter().map(|msg| {
-        MyFlashMessage {
+
+    let alerts = flash_messages
+        .iter()
+        .map(|msg| MyFlashMessage {
             content: msg.content().to_string(),
             level: msg.level().to_string(),
-        }
-    }).collect::<Vec<_>>();
+        })
+        .collect::<Vec<_>>();
     let posts = controller::post::offset_and_limit(&db, 0, per_page as u64)
         .await
         .unwrap();
@@ -61,4 +62,3 @@ pub async fn index(
         .content_type(ContentType::html())
         .body(html))
 }
-

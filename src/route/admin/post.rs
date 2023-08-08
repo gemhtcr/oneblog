@@ -1,7 +1,9 @@
 use crate::controller;
 use crate::controller::post;
 use crate::utils;
+use actix_web::http::header::ContentType;
 use actix_web::web;
+use actix_web::HttpResponse;
 use actix_web_flash_messages::FlashMessage;
 
 // GET /admin/posts/{post_id}/edit
@@ -10,11 +12,40 @@ pub async fn edit_form(
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
-    todo!()
+    let mut post = controller::post::find(&db, *post_id).await.unwrap();
+    match post.as_mut() {
+        Some(
+            inner @ controller::post::Model {
+                category_name: None,
+                ..
+            },
+        ) => {
+            inner.category_name = Some("None".to_string());
+        }
+        _ => {}
+    };
+    let categories = controller::category::posts_count(&db).await;
+
+    let html = hbs
+        .render(
+            "admin/edit_form",
+            &serde_json::json!({
+                "header": "admin/_header",
+                "sidebar": "_sidebar",
+                "categories": categories,
+                "post": post,
+            }),
+        )
+        .map_err(actix_web::error::ErrorInternalServerError)
+        .unwrap();
+
+    Ok(HttpResponse::Ok()
+        .content_type(ContentType::html())
+        .body(html))
 }
 
 // POST /admin/posts/{post_id}
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct EditFormData {
     post_id: i32,
     title: String,
@@ -22,10 +53,16 @@ pub struct EditFormData {
     category_name: Option<String>,
 }
 pub async fn edit(
-    edit_form_data: web::Path<EditFormData>,
+    edit_form_data: web::Form<EditFormData>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
+    tracing::info!(?edit_form_data);
+    // convert "none" into None
+    let mut edit_form_data = edit_form_data.into_inner();
+    edit_form_data.category_name = edit_form_data
+        .category_name
+        .filter(|inner| inner.to_lowercase() != "none");
     let _model = controller::post::update(
         &db,
         edit_form_data.post_id,
@@ -36,49 +73,59 @@ pub async fn edit(
     .await
     .unwrap();
 
+    FlashMessage::success(format!(r#"Edit "{}" with success"#, edit_form_data.title)).send();
     Ok(utils::see_other("/admin"))
 }
 
 // DELETE /admin/posts/{post_id}
-//pub async fn delete(
-//    post_id: web::Form<i32>,
-//    db: web::Data<sea_orm::DatabaseConnection>,
-//) -> Result<actix_web::HttpResponse, actix_web::Error> {
-//    let _ret = controller::post::destroy(&db, *post_id).await.unwrap();
-//    Ok(utils::see_other("/admin"))
-//}
-
 pub async fn delete(
     post_id: web::Path<i32>,
     db: web::Data<sea_orm::DatabaseConnection>,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
-    //let _ret = controller::post::destroy(&db, *post_id).await.unwrap();
+    let _ret = controller::post::destroy(&db, *post_id).await.unwrap();
     FlashMessage::success("Delete a post with success").send();
     Ok(utils::see_other("/admin"))
 }
 
 // GET /admin/posts/new/
 pub async fn new_form(
-    form: web::Form<NewFormData>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
-    //let _model = controller::post::create(&db, &form.title, &form.description, form.category_name).await.unwrap();
-    //Ok(utils::see_other("/admin"))
-    todo!()
+    let categories = controller::category::posts_count(&db).await;
+    let html = hbs
+        .render(
+            "admin/new_form",
+            &serde_json::json!({
+                "header": "admin/_header",
+                "sidebar": "_sidebar",
+                "categories": categories,
+            }),
+        )
+        .map_err(actix_web::error::ErrorInternalServerError)
+        .unwrap();
+
+    Ok(HttpResponse::Ok()
+        .content_type(ContentType::html())
+        .body(html))
 }
 
 // POST /admin/posts/
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct NewFormData {
     title: String,
     description: String,
     category_name: Option<String>,
 }
 pub async fn new(
-    form: web::Form<NewFormData>,
+    mut form: web::Form<NewFormData>,
     db: web::Data<sea_orm::DatabaseConnection>,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
+    let mut form = form.into_inner();
+    // convert "none" into None
+    form.category_name = form
+        .category_name
+        .filter(|inner| inner.to_lowercase() != "none");
     let _model = controller::post::create(
         &db,
         &form.title,
@@ -87,5 +134,6 @@ pub async fn new(
     )
     .await
     .unwrap();
+    FlashMessage::success(format!(r#"Create "{}" with success"#, form.title)).send();
     Ok(utils::see_other("/admin"))
 }

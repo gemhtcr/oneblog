@@ -1,6 +1,6 @@
 use crate::entities::post;
 pub use crate::entities::post::ActiveModel;
-use crate::entities::post::Model;
+pub use crate::entities::post::Model;
 use crate::entities::prelude::Post;
 use sea_orm::*;
 
@@ -46,7 +46,7 @@ pub async fn offset_and_limit(
     limit: u64,
 ) -> Result<Vec<Model>, DbErr> {
     Post::find()
-        //.order_by_desc(post::Column::Updated)
+        .order_by_desc(post::Column::Updated)
         .offset(offset)
         .limit(limit)
         .all(db)
