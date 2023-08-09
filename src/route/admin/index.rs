@@ -48,7 +48,7 @@ pub async fn index(
             "admin/index",
             &serde_json::json!({
                 "header": "admin/_header",
-                "sidebar": "_sidebar",
+                "sidebar": "admin/_sidebar",
                 "posts": posts,
                 "pages": pages,
                 "categories": categories,
