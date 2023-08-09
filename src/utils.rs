@@ -47,12 +47,15 @@ pub struct Page {
 
 // 1-indexed
 pub fn paginate(
-    total: usize,
+    mut total: usize,
     per_page: usize,
     active: usize,
     previous: Option<String>,
     next: Option<String>,
 ) -> Vec<Page> {
+    if total == 0 {
+        total = 1;
+    }
     let total_pages = (total + per_page - 1) / per_page;
     let mut pages = (1..=total_pages)
         .into_iter()
@@ -63,6 +66,7 @@ pub fn paginate(
             disabled: false,
         })
         .collect::<Vec<_>>();
+
     pages[active - 1].active = true;
 
     // add Previous

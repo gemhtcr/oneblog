@@ -31,7 +31,7 @@ pub async fn edit_form(
             "admin/edit_form",
             &serde_json::json!({
                 "header": "admin/_header",
-                "sidebar": "_sidebar",
+                "sidebar": "admin/_sidebar",
                 "categories": categories,
                 "post": post,
             }),
@@ -98,7 +98,7 @@ pub async fn new_form(
             "admin/new_form",
             &serde_json::json!({
                 "header": "admin/_header",
-                "sidebar": "_sidebar",
+                "sidebar": "admin/_sidebar",
                 "categories": categories,
             }),
         )

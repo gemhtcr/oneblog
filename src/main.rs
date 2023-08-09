@@ -71,7 +71,7 @@ async fn main() -> Result<(), std::io::Error> {
             )
             .service(
                 web::scope("/admin")
-                    //.wrap(from_fn(authentication::middleware::reject_anonymous_users))
+                    .wrap(from_fn(authentication::middleware::reject_anonymous_users))
                     .route("", web::get().to(route::admin::index::index))
                     .route("/", web::get().to(route::admin::index::index))
                     .route("/dashboard", web::get().to(route::admin::index::index))
