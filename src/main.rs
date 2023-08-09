@@ -97,17 +97,32 @@ async fn main() -> Result<(), std::io::Error> {
                     // categories
                     .route("/categories", web::get().to(route::admin::category::index))
                     // categories, page
-                    .route("/categories/page/{page_number}", web::get().to(route::admin::category::page))
+                    .route(
+                        "/categories/page/{page_number}",
+                        web::get().to(route::admin::category::page),
+                    )
                     // categories, new_form
-                    .route("/categories/new", web::get().to(route::admin::category::new_form))
+                    .route(
+                        "/categories/new",
+                        web::get().to(route::admin::category::new_form),
+                    )
                     // categories, new
                     .route("/categories", web::post().to(route::admin::category::new))
                     // categories, edit_form
-                    .route("/categories/{category_id}/edit", web::get().to(route::admin::category::edit_form))
+                    .route(
+                        "/categories/{category_id}/edit",
+                        web::get().to(route::admin::category::edit_form),
+                    )
                     // categories, edit
-                    .route("/categories/{category_id}", web::post().to(route::admin::category::edit))
+                    .route(
+                        "/categories/{category_id}",
+                        web::post().to(route::admin::category::edit),
+                    )
                     // categories, delete
-                    .route("/categories/{category_id}/delete", web::get().to(route::admin::category::delete))
+                    .route(
+                        "/categories/{category_id}/delete",
+                        web::get().to(route::admin::category::delete),
+                    )
                     // logout
                     .route("/logout", web::get().to(route::admin::logout::logout)),
             )

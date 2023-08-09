@@ -1,11 +1,11 @@
+use crate::controller;
 use crate::controller::category;
-use actix_web::web;
 use crate::utils;
 use actix_web::http::header::ContentType;
+use actix_web::web;
 use actix_web::HttpResponse;
 use actix_web_flash_messages::FlashMessage;
 use actix_web_flash_messages::IncomingFlashMessages;
-use crate::controller;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct MyFlashMessage {
@@ -20,7 +20,9 @@ pub async fn index(
     flash_messages: IncomingFlashMessages,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
-    let categories = controller::category::offset_and_limit(&db, Some(0), Some(per_page as u64)).await.unwrap();
+    let categories = controller::category::offset_and_limit(&db, Some(0), Some(per_page as u64))
+        .await
+        .unwrap();
     let counts = controller::category::count(&db).await.unwrap();
     tracing::info!(?counts);
     let pages = utils::paginate(
@@ -72,13 +74,19 @@ pub async fn page(
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
     let page = page.into_inner();
-    let categories = controller::category::offset_and_limit(&db, Some((page as u64-1)*per_page as u64), Some(per_page as u64)).await.unwrap();
+    let categories = controller::category::offset_and_limit(
+        &db,
+        Some((page as u64 - 1) * per_page as u64),
+        Some(per_page as u64),
+    )
+    .await
+    .unwrap();
     let counts = controller::category::count(&db).await.unwrap();
     tracing::info!(?counts);
     let pages = utils::paginate(
         counts as usize,
         per_page,
-        page as usize ,
+        page as usize,
         Some("<".to_string()),
         Some(">".to_string()),
     );
@@ -134,12 +142,7 @@ pub async fn new(
     db: web::Data<sea_orm::DatabaseConnection>,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
     let mut form = form.into_inner();
-    let _model = controller::category::create(
-        &db,
-        &form.name,
-    )
-    .await
-    .unwrap();
+    let _model = controller::category::create(&db, &form.name).await.unwrap();
     FlashMessage::success(format!(r#"Create "{}" with success"#, form.name)).send();
     Ok(utils::see_other("/admin/categories"))
 }
@@ -182,13 +185,10 @@ pub async fn edit(
     tracing::info!(?edit_form_data);
     // convert "none" into None
     let mut edit_form_data = edit_form_data.into_inner();
-    let _model = controller::category::update(
-        &db,
-        edit_form_data.category_id,
-        &edit_form_data.name,
-    )
-    .await
-    .unwrap();
+    let _model =
+        controller::category::update(&db, edit_form_data.category_id, &edit_form_data.name)
+            .await
+            .unwrap();
 
     FlashMessage::success(format!(r#"Edit "{}" with success"#, edit_form_data.name)).send();
     Ok(utils::see_other("/admin/categories"))
@@ -199,7 +199,9 @@ pub async fn delete(
     category_id: web::Path<i32>,
     db: web::Data<sea_orm::DatabaseConnection>,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
-    let _ret = controller::category::destroy(&db, *category_id).await.unwrap();
+    let _ret = controller::category::destroy(&db, *category_id)
+        .await
+        .unwrap();
     FlashMessage::success("Delete a category with success").send();
     Ok(utils::see_other("/admin/categories"))
 }

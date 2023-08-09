@@ -37,9 +37,7 @@ pub async fn all(db: &DatabaseConnection) -> Result<Vec<Model>, DbErr> {
 
 // count is to return size of categories
 pub async fn count(db: &DatabaseConnection) -> Result<u64, DbErr> {
-    Category::find()
-        .count(db)
-        .await
+    Category::find().count(db).await
 }
 
 pub async fn posts_count(db: &DatabaseConnection) -> Vec<(Model, u64)> {
