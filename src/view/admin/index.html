@@ -92,10 +92,10 @@
 						<td>{{this.updated}}</td>
 						<td>
                               <button type="button" class="btn btn-warning" onclick="location.href='/admin/posts/{{this.id}}/edit'" type="button">Edit</button>
-						   	  <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#basicModal">
+						   	  <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#basicModal{{@index}}">
 						        Delete
 							  </button>
-							     <div class="modal fade" id="basicModal" tabindex="-1" style="display: none;" aria-hidden="true">
+							     <div class="modal fade" id="basicModal{{@index}}" tabindex="-1" style="display: none;" aria-hidden="true">
 								    <div class="modal-dialog">
 									  <div class="modal-content">
 										<div class="modal-header">
