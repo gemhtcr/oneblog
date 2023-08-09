@@ -51,7 +51,7 @@
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item active">Home</li>
-          <li class="breadcrumb-item active">Posts</li>
+          <li class="breadcrumb-item active">Categories</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
@@ -66,9 +66,9 @@
 		{{/each}}
         <div class="col-lg-12">
 		<div class="card-body">
-              <h5 class="card-title">Posts</h5>
+              <h5 class="card-title">Categories</h5>
 		      <!--<button type="button" class="btn btn-success">-->
-              <button class="btn btn-success" onclick="location.href='/admin/posts/new'" type="button">+New</button>
+              <button class="btn btn-success" onclick="location.href='/admin/categories/new'" type="button">+New</button>
 		      <!--</button>-->
               <!-- Table with stripped rows -->
               <table class="table table-striped">
@@ -81,13 +81,13 @@
                   </tr>
                 </thead>
                 <tbody>
-					{{#each posts}}
+					{{#each categories}}
 					  <tr>
 						<th scope="row">{{@index}}</th>
-						<td>{{this.name}}</td>
-						<td>{{this.updated}}</td>
+						<td>{{this.0.name}}</td>
+						<td>{{this.0.updated}}</td>
 						<td>
-                              <button type="button" class="btn btn-warning" onclick="location.href='/admin/category/{{this.id}}/edit'" type="button">Edit</button>
+                              <button type="button" class="btn btn-warning" onclick="location.href='/admin/categories/{{this.0.id}}/edit'" type="button">Edit</button>
 						   	  <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#basicModal">
 						        Delete
 							  </button>
@@ -99,11 +99,11 @@
 										  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 										</div>
 										<div class="modal-body">
-											Are you sure you want to delete "{{this.title}}" ?
+											Are you sure you want to delete "{{this.0.title}}" ?
 										</div>
 										<div class="modal-footer">
 										  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Back</button>
-										  <button type="button" onclick="location.href='/admin/posts/{{this.id}}/delete'" class="btn btn-danger">Delete</button>
+										  <button type="button" onclick="location.href='/admin/categories/{{this.0.id}}/delete'" class="btn btn-danger">Delete</button>
 										</div>
 									  </div> <!--End content-->
 									</div> <!--End dialog-->
