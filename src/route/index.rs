@@ -123,6 +123,7 @@ pub async fn posts_with_category(
             "posts_with_category",
             &serde_json::json!(
                 {
+                    "header":"_header",
                     "sidebar":"_sidebar",
                     "pages": pages,
                     "cur_category": category,
