@@ -75,6 +75,11 @@ async fn main() -> Result<(), std::io::Error> {
                     .route("", web::get().to(route::admin::index::index))
                     .route("/", web::get().to(route::admin::index::index))
                     .route("/dashboard", web::get().to(route::admin::index::index))
+                    // page
+                    .route(
+                        "/posts/page/{page_number}",
+                        web::get().to(route::admin::post::posts),
+                    )
                     // edit
                     .route(
                         "/posts/{post_id}/edit",

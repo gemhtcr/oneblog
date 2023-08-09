@@ -137,3 +137,44 @@ pub async fn new(
     FlashMessage::success(format!(r#"Create "{}" with success"#, form.title)).send();
     Ok(utils::see_other("/admin"))
 }
+
+pub async fn posts(
+    page: web::Path<i32>,
+    mut per_page: Option<web::Query<usize>>,
+    db: web::Data<sea_orm::DatabaseConnection>,
+    hbs: web::Data<handlebars::Handlebars<'_>>,
+) -> Result<actix_web::HttpResponse, actix_web::Error> {
+    let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
+    let page = page.into_inner() as usize;
+    let counts = controller::post::count(&db).await.unwrap();
+    let pages = utils::paginate(
+        counts as usize,
+        per_page,
+        page,
+        Some("<".to_string()),
+        Some(">".to_string()),
+    );
+
+    let posts =
+        controller::post::offset_and_limit(&db, ((page - 1) * per_page) as u64, per_page as u64)
+            .await
+            .unwrap();
+    let categories = controller::category::posts_count(&db).await;
+    let html = hbs
+        .render(
+            "admin/index",
+            &serde_json::json!({
+                "header": "admin/_header",
+                "sidebar":"admin/_sidebar",
+                "posts": posts,
+                "pages": pages,
+                "categories": categories
+            }),
+        )
+        .map_err(actix_web::error::ErrorInternalServerError)
+        .unwrap();
+
+    Ok(HttpResponse::Ok()
+        .content_type(ContentType::html())
+        .body(html))
+}
