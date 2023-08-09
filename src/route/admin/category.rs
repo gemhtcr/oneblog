@@ -1,11 +1,11 @@
-use crate::controller;
 use crate::controller::category;
+use actix_web::web;
 use crate::utils;
 use actix_web::http::header::ContentType;
-use actix_web::web;
 use actix_web::HttpResponse;
 use actix_web_flash_messages::FlashMessage;
 use actix_web_flash_messages::IncomingFlashMessages;
+use crate::controller;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct MyFlashMessage {
@@ -20,9 +20,9 @@ pub async fn index(
     flash_messages: IncomingFlashMessages,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
-    let categories = controller::category::posts_count(&db).await;
-    let counts = categories.len();
-
+    let categories = controller::category::offset_and_limit(&db, Some(0), Some(per_page as u64)).await.unwrap();
+    let counts = controller::category::count(&db).await.unwrap();
+    tracing::info!(?counts);
     let pages = utils::paginate(
         counts as usize,
         per_page,
@@ -65,10 +65,63 @@ pub struct Pagination {
 
 // GET admin/categories/page/{page_number}
 pub async fn page(
-    pagination: web::Path<Pagination>,
+    page: web::Path<i32>,
+    mut per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
+    hbs: web::Data<handlebars::Handlebars<'_>>,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
-    todo!()
+    let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
+    let page = page.into_inner();
+    let categories = controller::category::offset_and_limit(&db, Some((page as u64-1)*per_page as u64), Some(per_page as u64)).await.unwrap();
+    let counts = controller::category::count(&db).await.unwrap();
+    tracing::info!(?counts);
+    let pages = utils::paginate(
+        counts as usize,
+        per_page,
+        page as usize ,
+        Some("<".to_string()),
+        Some(">".to_string()),
+    );
+
+    let html = hbs
+        .render(
+            "admin/categories",
+            &serde_json::json!({
+                "header": "admin/_header",
+                "sidebar": "admin/_sidebar",
+                "pages": pages,
+                "categories": categories,
+            }),
+        )
+        .map_err(actix_web::error::ErrorInternalServerError)
+        .unwrap();
+
+    Ok(HttpResponse::Ok()
+        .content_type(ContentType::html())
+        .body(html))
+}
+
+// GET /admin/categories/new/
+pub async fn new_form(
+    db: web::Data<sea_orm::DatabaseConnection>,
+    hbs: web::Data<handlebars::Handlebars<'_>>,
+) -> Result<actix_web::HttpResponse, actix_web::Error> {
+    let categories = controller::category::posts_count(&db).await;
+    let html = hbs
+        .render(
+            "admin/categories_new_form",
+            &serde_json::json!({
+                "header": "admin/_header",
+                "sidebar": "admin/_sidebar",
+                "categories": categories,
+            }),
+        )
+        .map_err(actix_web::error::ErrorInternalServerError)
+        .unwrap();
+
+    Ok(HttpResponse::Ok()
+        .content_type(ContentType::html())
+        .body(html))
 }
 
 // POST admin/categories
@@ -81,10 +134,14 @@ pub async fn new(
     db: web::Data<sea_orm::DatabaseConnection>,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
     let mut form = form.into_inner();
-    // convert "none" into None
-    let _model = controller::category::create(&db, &form.name).await.unwrap();
+    let _model = controller::category::create(
+        &db,
+        &form.name,
+    )
+    .await
+    .unwrap();
     FlashMessage::success(format!(r#"Create "{}" with success"#, form.name)).send();
-    Ok(utils::see_other("/admin"))
+    Ok(utils::see_other("/admin/categories"))
 }
 
 // GET admin/categories/{category_id}/edit

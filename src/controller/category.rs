@@ -35,9 +35,15 @@ pub async fn all(db: &DatabaseConnection) -> Result<Vec<Model>, DbErr> {
         .await
 }
 
+// count is to return size of categories
+pub async fn count(db: &DatabaseConnection) -> Result<u64, DbErr> {
+    Category::find()
+        .count(db)
+        .await
+}
+
 pub async fn posts_count(db: &DatabaseConnection) -> Vec<(Model, u64)> {
-    let categories = Category::find().all(db).await.unwrap();
-    let cnt = categories[0].find_related(Post).count(db).await.unwrap();
+    let categories = all(db).await.unwrap();
     let ret = categories
         .into_iter()
         .map(|cat| {
@@ -87,8 +93,8 @@ pub async fn find_posts_count(db: &DatabaseConnection, id: i32) -> Result<u64, D
 // offset_and_limit is to get paginated data based on offset and limit
 pub async fn offset_and_limit(
     db: &DatabaseConnection,
-    limit: u64,
-    offset: u64,
+    offset: Option<u64>,
+    limit: Option<u64>,
 ) -> Result<Vec<Model>, DbErr> {
     Category::find()
         .order_by_desc(category::Column::Updated)

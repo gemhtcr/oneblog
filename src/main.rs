@@ -96,8 +96,13 @@ async fn main() -> Result<(), std::io::Error> {
                     )
                     // categories
                     .route("/categories", web::get().to(route::admin::category::index))
+                    // categories, new_form
+                    .route("/categories/new", web::get().to(route::admin::category::new_form))
                     // categories, new
                     .route("/categories", web::post().to(route::admin::category::new))
+                    // categories, page
+                    .route("/categories/page/{page_number}", web::get().to(route::admin::category::page))
+                    // logout
                     .route("/logout", web::get().to(route::admin::logout::logout)),
             )
             //.wrap(TracingLogger::default())
