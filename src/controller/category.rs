@@ -115,8 +115,9 @@ pub async fn cursor(db: &DatabaseConnection, cursor: u64, limit: u64) -> Result<
         .await
 }
 
-pub async fn update(db: &DatabaseConnection, id: u64, name: &str) -> Result<Model, DbErr> {
+pub async fn update(db: &DatabaseConnection, id: i32, name: &str) -> Result<Model, DbErr> {
     ActiveModel {
+        id: ActiveValue::Unchanged(id),
         name: ActiveValue::Set(name.to_string()),
         updated: ActiveValue::Set(chrono::offset::Utc::now()),
         ..Default::default()

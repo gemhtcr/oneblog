@@ -144,18 +144,62 @@ pub async fn new(
     Ok(utils::see_other("/admin/categories"))
 }
 
-// GET admin/categories/{category_id}/edit
-pub async fn edit(
-    category_id: web::Form<String>,
+// GET /admin/categories/{category_id}/edit
+pub async fn edit_form(
+    category_id: web::Path<i32>,
     db: web::Data<sea_orm::DatabaseConnection>,
+    hbs: web::Data<handlebars::Handlebars<'_>>,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
-    todo!()
+    let mut category = controller::category::find(&db, *category_id).await.unwrap();
+    let html = hbs
+        .render(
+            "admin/categories_edit_form",
+            &serde_json::json!({
+                "header": "admin/_header",
+                "sidebar": "admin/_sidebar",
+                "category": category,
+            }),
+        )
+        .map_err(actix_web::error::ErrorInternalServerError)
+        .unwrap();
+
+    Ok(HttpResponse::Ok()
+        .content_type(ContentType::html())
+        .body(html))
 }
 
-// DELETE admin/categories/{category_id}
+// POST /admin/categories/{category_id}
+#[derive(serde::Deserialize, Debug)]
+pub struct EditFormData {
+    category_id: i32,
+    name: String,
+}
+pub async fn edit(
+    edit_form_data: web::Form<EditFormData>,
+    db: web::Data<sea_orm::DatabaseConnection>,
+    hbs: web::Data<handlebars::Handlebars<'_>>,
+) -> Result<actix_web::HttpResponse, actix_web::Error> {
+    tracing::info!(?edit_form_data);
+    // convert "none" into None
+    let mut edit_form_data = edit_form_data.into_inner();
+    let _model = controller::category::update(
+        &db,
+        edit_form_data.category_id,
+        &edit_form_data.name,
+    )
+    .await
+    .unwrap();
+
+    FlashMessage::success(format!(r#"Edit "{}" with success"#, edit_form_data.name)).send();
+    Ok(utils::see_other("/admin/categories"))
+}
+
+// GET admin/categories/{category_id}/delete
 pub async fn delete(
-    category_id: web::Form<String>,
+    category_id: web::Path<i32>,
     db: web::Data<sea_orm::DatabaseConnection>,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
-    todo!()
+    let _ret = controller::category::destroy(&db, *category_id).await.unwrap();
+    FlashMessage::success("Delete a category with success").send();
+    Ok(utils::see_other("/admin/categories"))
 }

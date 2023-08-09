@@ -77,7 +77,7 @@ pub async fn edit(
     Ok(utils::see_other("/admin"))
 }
 
-// DELETE /admin/posts/{post_id}
+// GET /admin/posts/{post_id}
 pub async fn delete(
     post_id: web::Path<i32>,
     db: web::Data<sea_orm::DatabaseConnection>,
