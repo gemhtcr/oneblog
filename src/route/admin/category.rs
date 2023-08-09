@@ -1,11 +1,11 @@
+use crate::controller;
 use crate::controller::category;
-use actix_web::web;
 use crate::utils;
 use actix_web::http::header::ContentType;
+use actix_web::web;
 use actix_web::HttpResponse;
 use actix_web_flash_messages::FlashMessage;
 use actix_web_flash_messages::IncomingFlashMessages;
-use crate::controller;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct MyFlashMessage {
@@ -72,11 +72,19 @@ pub async fn page(
 }
 
 // POST admin/categories
+#[derive(serde::Deserialize, Debug)]
+pub struct NewFormData {
+    name: String,
+}
 pub async fn new(
-    name: web::Form<String>,
+    mut form: web::Form<NewFormData>,
     db: web::Data<sea_orm::DatabaseConnection>,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
-    todo!()
+    let mut form = form.into_inner();
+    // convert "none" into None
+    let _model = controller::category::create(&db, &form.name).await.unwrap();
+    FlashMessage::success(format!(r#"Create "{}" with success"#, form.name)).send();
+    Ok(utils::see_other("/admin"))
 }
 
 // GET admin/categories/{category_id}/edit

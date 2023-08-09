@@ -35,14 +35,6 @@ pub async fn all(db: &DatabaseConnection) -> Result<Vec<Model>, DbErr> {
         .await
 }
 
-pub async fn posts(db: &DatabaseConnection) -> Vec<(category::Model, Vec<post::Model>)> {
-    Category::find()
-        .find_with_related(Post)
-        .all(db)
-        .await
-        .unwrap()
-}
-
 pub async fn posts_count(db: &DatabaseConnection) -> Vec<(Model, u64)> {
     let categories = Category::find().all(db).await.unwrap();
     let cnt = categories[0].find_related(Post).count(db).await.unwrap();
@@ -78,6 +70,7 @@ pub async fn find_posts_with(
     let cat = find(db, id).await?.unwrap();
     let ret = cat
         .find_related(Post)
+        .order_by_desc(post::Column::Updated)
         .offset(offset)
         .limit(limit)
         .all(db)

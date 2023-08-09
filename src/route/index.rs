@@ -97,10 +97,17 @@ pub async fn posts_with_category(
     let db: &sea_orm::DatabaseConnection = &db;
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
     let (category_id, page_number) = path.into_inner();
-    let (category, posts) = controller::category::find_posts(&db, category_id)
+    let count = controller::category::find_posts_count(&db, category_id)
         .await
         .unwrap();
-    let count = posts.len();
+    let (category, posts) = controller::category::find_posts_with(
+        &db,
+        category_id,
+        Some((page_number as u64 - 1) * per_page as u64),
+        Some(per_page as u64),
+    )
+    .await
+    .unwrap();
     let pages = utils::paginate(
         count as usize,
         per_page,

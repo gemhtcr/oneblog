@@ -94,11 +94,10 @@ async fn main() -> Result<(), std::io::Error> {
                         "/posts/{post_id}/delete",
                         web::get().to(route::admin::post::delete),
                     )
-                    .route(
-                        "/categories",
-                        web::get().to(route::admin::category::index),
-                    )
-
+                    // categories
+                    .route("/categories", web::get().to(route::admin::category::index))
+                    // categories, new
+                    .route("/categories", web::post().to(route::admin::category::new))
                     .route("/logout", web::get().to(route::admin::logout::logout)),
             )
             //.wrap(TracingLogger::default())
