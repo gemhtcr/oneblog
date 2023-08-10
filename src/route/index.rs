@@ -32,11 +32,9 @@ pub async fn index(
         .render(
             "index",
             &serde_json::json!({
-                "header": "_header",
-                "sidebar": "_sidebar",
                 "posts": posts,
                 "pages": pages,
-                "categories": categories
+                "meta": serde_json::json!({"categories": categories}),
             }),
         )
         .map_err(actix_web::error::ErrorInternalServerError)
