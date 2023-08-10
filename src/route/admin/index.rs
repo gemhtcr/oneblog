@@ -14,7 +14,7 @@ struct MyFlashMessage {
     level: String,
 }
 
-// GET /admin/dashboard
+// GET /admin
 pub async fn index(
     mut per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
