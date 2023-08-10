@@ -22,10 +22,9 @@
           </div>
           {{/each}}
           <div class="col-lg-12">
-            <div class="card-body">
               <h5 class="card-title">Posts</h5>
               <!--<button type="button" class="btn btn-success">-->
-              <button class="btn btn-success" onclick="location.href='/admin/posts/new'" type="button">+New</button>
+              <button style="float:right; margin-right:0px;margin-bottom:10px" class="btn btn-success" onclick="location.href='/admin/posts/new'" type="button">+New</button>
               <!--</button>-->
               <!-- Table with stripped rows -->
               <table class="table table-striped">
@@ -75,7 +74,6 @@
                 </tbody>
               </table>
               <!-- End Table with stripped rows -->
-            </div>
             <nav aria-label="...">
               <ul class="pagination">
                 {{#each pages}}
