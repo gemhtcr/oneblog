@@ -73,7 +73,7 @@ pub async fn edit(
     .await
     .unwrap();
 
-    FlashMessage::success(format!(r#"Edit "{}" with success"#, edit_form_data.title)).send();
+    FlashMessage::success(format!(r#"Edited "{}" with success"#, edit_form_data.title)).send();
     Ok(utils::see_other("/admin"))
 }
 
@@ -83,7 +83,7 @@ pub async fn delete(
     db: web::Data<sea_orm::DatabaseConnection>,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
     let _ret = controller::post::destroy(&db, *post_id).await.unwrap();
-    FlashMessage::success("Delete a post with success").send();
+    FlashMessage::success("Deleted a post with success").send();
     Ok(utils::see_other("/admin"))
 }
 
@@ -134,7 +134,7 @@ pub async fn new(
     )
     .await
     .unwrap();
-    FlashMessage::success(format!(r#"Create "{}" with success"#, form.title)).send();
+    FlashMessage::success(format!(r#"Created "{}" with success"#, form.title)).send();
     Ok(utils::see_other("/admin"))
 }
 

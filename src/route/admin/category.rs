@@ -143,7 +143,7 @@ pub async fn new(
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
     let mut form = form.into_inner();
     let _model = controller::category::create(&db, &form.name).await.unwrap();
-    FlashMessage::success(format!(r#"Create "{}" with success"#, form.name)).send();
+    FlashMessage::success(format!(r#"Created "{}" with success"#, form.name)).send();
     Ok(utils::see_other("/admin/categories"))
 }
 
@@ -190,7 +190,7 @@ pub async fn edit(
             .await
             .unwrap();
 
-    FlashMessage::success(format!(r#"Edit "{}" with success"#, edit_form_data.name)).send();
+    FlashMessage::success(format!(r#"Edited "{}" with success"#, edit_form_data.name)).send();
     Ok(utils::see_other("/admin/categories"))
 }
 
@@ -202,6 +202,6 @@ pub async fn delete(
     let _ret = controller::category::destroy(&db, *category_id)
         .await
         .unwrap();
-    FlashMessage::success("Delete a category with success").send();
+    FlashMessage::success("Deleted a category with success").send();
     Ok(utils::see_other("/admin/categories"))
 }
