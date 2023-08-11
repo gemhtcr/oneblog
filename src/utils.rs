@@ -57,6 +57,9 @@ pub fn paginate(
         return vec![];
     }
     let total_pages = (total + per_page - 1) / per_page;
+    if total_pages < active {
+        return vec![];
+    }
     let mut pages = (1..=total_pages)
         .into_iter()
         .map(|index| Page {
