@@ -54,7 +54,7 @@ pub fn paginate(
     next: Option<String>,
 ) -> Vec<Page> {
     if total == 0 {
-        total = 1;
+        return vec![];
     }
     let total_pages = (total + per_page - 1) / per_page;
     let mut pages = (1..=total_pages)
