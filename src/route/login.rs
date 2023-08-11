@@ -10,22 +10,32 @@ use actix_web::HttpResponse;
 use actix_web_flash_messages::FlashMessage;
 use actix_web_flash_messages::IncomingFlashMessages;
 
+use actix_web_flash_messages::Level;
 use secrecy::Secret;
 use std::fmt::Write;
+
+#[derive(serde::Serialize)]
+struct MyFlashMessage {
+    content: String,
+    level: String,
+}
 
 pub async fn login_form(
     flash_messages: IncomingFlashMessages,
     hbs: web::Data<handlebars::Handlebars<'_>>,
 ) -> HttpResponse {
-    let mut flash_error = String::new();
-    for m in flash_messages.iter() {
-        writeln!(flash_error, "{}", m.content()).unwrap();
-    }
+    let alerts = flash_messages
+        .iter()
+        .map(|msg| MyFlashMessage {
+            content: msg.content().to_string(),
+            level: match msg.level() {
+                Level::Error => "danger".to_string(),
+                other => other.to_string(),
+            },
+        })
+        .collect::<Vec<_>>();
     let html = hbs
-        .render(
-            "login_form",
-            &serde_json::json!({"error_html": flash_error}),
-        )
+        .render("login_form", &serde_json::json!({"alerts": alerts}))
         .map_err(actix_web::error::ErrorInternalServerError)
         .unwrap();
 

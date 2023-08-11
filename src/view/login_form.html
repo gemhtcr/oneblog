@@ -14,11 +14,16 @@
                     <span class="d-none d-lg-block">OneBlog</span>
                   </a>
                 </div><!-- End Logo -->
+                {{#each alerts}}
+                <div class="alert alert-{{this.level}} alert-dismissible fade show" role="alert">
+                  {{this.content}}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {{/each}}
                 <div class="card mb-3">
                   <div class="card-body">
                     <div class="pt-4 pb-2">
-                      <h5 class="card-title text-center pb-0 fs-4">Login to Your Account</h5>
-                      <p class="text-center small">Enter your username & password to login</p>
+                      <h5 class="card-title text-center pb-0 fs-1">Login</h5>
                     </div>
                     <form class="row g-3 needs-validation" novalidate action="/login" method="post">
                       <div class="col-12">
