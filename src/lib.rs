@@ -5,4 +5,5 @@ pub mod entities;
 pub mod route;
 pub mod session_state;
 pub mod telemetry;
+pub mod template_engine;
 pub mod utils;

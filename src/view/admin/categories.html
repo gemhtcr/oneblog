@@ -42,7 +42,7 @@
                   <tr>
                     <th scope="row">{{@index}}</th>
                     <td>{{this.name}}</td>
-                    <td>{{this.updated}}</td>
+                    <td>{{time this.updated}}</td>
                     <td>
                       <button type="button" class="btn btn-warning" onclick="location.href='/admin/categories/{{this.id}}/edit'" type="button">Edit</button>
                       <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#basicModal{{@index}}">

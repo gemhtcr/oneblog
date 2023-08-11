@@ -38,19 +38,7 @@ async fn main() -> Result<(), std::io::Error> {
     let redis_store = RedisSessionStore::new(redis_uri.expose_secret())
         .await
         .unwrap();
-    let mut handlebars = Handlebars::new();
-    handlebars
-        .register_templates_directory(".html", "./src/view/")
-        .unwrap();
-    use sea_orm::query::QueryTrait;
-    use sea_orm::sea_query::QueryStatementBuilder;
-    use sea_orm::ActiveValue;
-    use sea_orm::EntityTrait;
-
-    //let handlebars = crate::Handlebars::new();
-    use handlebars::handlebars_helper;
-    use serde_json::Value as Json;
-
+    let handlebars = template_engine::init();
     HttpServer::new(move || {
         App::new()
             .wrap(message_framework.clone())
