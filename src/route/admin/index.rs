@@ -1,4 +1,5 @@
 use crate::controller;
+use crate::error::OneBlogError;
 use crate::utils;
 use actix_web::error::InternalError;
 use actix_web::http::header::ContentType;
@@ -20,9 +21,9 @@ pub async fn index(
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
     flash_messages: IncomingFlashMessages,
-) -> Result<actix_web::HttpResponse, actix_web::Error> {
+) -> impl actix_web::Responder {
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
-    let counts = controller::post::count(&db).await.unwrap();
+    let counts = controller::post::count(&db).await?;
     let pages = utils::paginate(
         counts as usize,
         per_page,
@@ -38,27 +39,20 @@ pub async fn index(
             level: msg.level().to_string(),
         })
         .collect::<Vec<_>>();
-    let posts = controller::post::offset_and_limit(&db, 0, per_page as u64)
-        .await
-        .unwrap();
+    let posts = controller::post::offset_and_limit(&db, 0, per_page as u64).await?;
 
-    let categories = controller::category::posts_count(&db).await;
-    let html = hbs
-        .render(
-            "admin/index",
-            &serde_json::json!({
-                "header": "admin/_header",
-                "sidebar": "admin/_sidebar",
-                "posts": posts,
-                "pages": pages,
-                "categories": categories,
-                "alerts": alerts,
-            }),
-        )
-        .map_err(actix_web::error::ErrorInternalServerError)
-        .unwrap();
+    let categories = controller::category::posts_count(&db).await?;
+    let html = hbs.render(
+        "admin/index",
+        &serde_json::json!({
+            "header": "admin/_header",
+            "sidebar": "admin/_sidebar",
+            "posts": posts,
+            "pages": pages,
+            "categories": categories,
+            "alerts": alerts,
+        }),
+    )?;
 
-    Ok(HttpResponse::Ok()
-        .content_type(ContentType::html())
-        .body(html))
+    OneBlogError::ok(utils::html(html))
 }

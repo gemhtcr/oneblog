@@ -1,6 +1,8 @@
 use crate::authentication::AuthError;
 use crate::authentication::{validate_credentials, Credentials};
+use crate::error::OneBlogError;
 use crate::session_state::TypedSession;
+use crate::utils;
 use crate::utils::error_chain_fmt;
 use actix_web::error::InternalError;
 use actix_web::http::header::ContentType;
@@ -9,7 +11,6 @@ use actix_web::web;
 use actix_web::HttpResponse;
 use actix_web_flash_messages::FlashMessage;
 use actix_web_flash_messages::IncomingFlashMessages;
-
 use actix_web_flash_messages::Level;
 use secrecy::Secret;
 use std::fmt::Write;
@@ -23,7 +24,7 @@ struct MyFlashMessage {
 pub async fn login_form(
     flash_messages: IncomingFlashMessages,
     hbs: web::Data<handlebars::Handlebars<'_>>,
-) -> HttpResponse {
+) -> impl actix_web::Responder {
     let alerts = flash_messages
         .iter()
         .map(|msg| MyFlashMessage {
@@ -34,14 +35,9 @@ pub async fn login_form(
             },
         })
         .collect::<Vec<_>>();
-    let html = hbs
-        .render("login_form", &serde_json::json!({"alerts": alerts}))
-        .map_err(actix_web::error::ErrorInternalServerError)
-        .unwrap();
+    let html = hbs.render("login_form", &serde_json::json!({"alerts": alerts}))?;
 
-    HttpResponse::Ok()
-        .content_type(ContentType::html())
-        .body(html)
+    OneBlogError::ok(utils::html(html))
 }
 
 #[derive(serde::Deserialize, Debug)]

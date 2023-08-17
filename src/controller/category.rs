@@ -40,8 +40,8 @@ pub async fn count(db: &DatabaseConnection) -> Result<u64, DbErr> {
     Category::find().count(db).await
 }
 
-pub async fn posts_count(db: &DatabaseConnection) -> Vec<(Model, u64)> {
-    let categories = all(db).await.unwrap();
+pub async fn posts_count(db: &DatabaseConnection) -> Result<Vec<(Model, u64)>, DbErr> {
+    let categories = all(db).await?;
     let ret = categories
         .into_iter()
         .map(|cat| {
@@ -55,13 +55,13 @@ pub async fn posts_count(db: &DatabaseConnection) -> Vec<(Model, u64)> {
         .collect::<Vec<_>>()
         .await;
 
-    ret
+    Ok(ret)
 }
 
 pub async fn find_posts(
     db: &DatabaseConnection,
     id: i32,
-) -> Result<(Model, Vec<post::Model>), DbErr> {
+) -> Result<Option<(Model, Vec<post::Model>)>, DbErr> {
     find_posts_with(db, id, None, None).await
 }
 
@@ -70,22 +70,33 @@ pub async fn find_posts_with(
     id: i32,
     offset: Option<u64>,
     limit: Option<u64>,
-) -> Result<(Model, Vec<post::Model>), DbErr> {
-    let cat = find(db, id).await?.unwrap();
-    let ret = cat
-        .find_related(Post)
-        .order_by_desc(post::Column::Updated)
-        .offset(offset)
-        .limit(limit)
-        .all(db)
-        .await?;
-    Ok((cat, ret))
+) -> Result<Option<(Model, Vec<post::Model>)>, DbErr> {
+    let cat = find(db, id).await?;
+    let fut: futures::future::OptionFuture<_> = cat
+        .map(|inner| async move {
+            inner
+                .find_related(Post)
+                .order_by_desc(post::Column::Updated)
+                .offset(offset)
+                .limit(limit)
+                .all(db)
+                .await
+                .map(|vec| (inner, vec))
+        })
+        .into();
+    let ret = fut.await;
+    let ret = ret.transpose();
+    ret
 }
 
 pub async fn find_posts_count(db: &DatabaseConnection, id: i32) -> Result<u64, DbErr> {
-    let cat = find(db, id).await?.unwrap();
-    let ret = cat.find_related(Post).count(db).await?;
-    Ok(ret)
+    let Some(cat) = find(db, id).await?
+    else {
+        // Note that we return 0 to simplify edge cases if model doesn't exist
+        return Ok(0);
+    };
+
+    cat.find_related(Post).count(db).await
 }
 
 // offset_and_limit is to get paginated data based on offset and limit

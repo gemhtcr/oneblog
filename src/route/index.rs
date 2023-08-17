@@ -1,4 +1,5 @@
 use crate::controller;
+use crate::error::OneBlogError;
 use crate::utils;
 use actix_web::error::InternalError;
 use actix_web::http::header::ContentType;
@@ -13,9 +14,10 @@ pub async fn index(
     mut per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
-) -> Result<actix_web::HttpResponse, actix_web::Error> {
+    //) -> Result<actix_web::HttpResponse, actix_web::Error> {
+) -> impl actix_web::Responder {
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
-    let counts = controller::post::count(&db).await.unwrap();
+    let counts = controller::post::count(&db).await?;
     let pages = utils::paginate(
         counts as usize,
         per_page,
@@ -23,26 +25,19 @@ pub async fn index(
         Some("<".to_string()),
         Some(">".to_string()),
     );
-    let posts = controller::post::offset_and_limit(&db, 0, per_page as u64)
-        .await
-        .unwrap();
+    let posts = controller::post::offset_and_limit(&db, 0, per_page as u64).await?;
 
-    let categories = controller::category::posts_count(&db).await;
-    let html = hbs
-        .render(
-            "index",
-            &serde_json::json!({
-                "posts": posts,
-                "pages": pages,
-                "meta": serde_json::json!({"categories": categories}),
-            }),
-        )
-        .map_err(actix_web::error::ErrorInternalServerError)
-        .unwrap();
+    let categories = controller::category::posts_count(&db).await?;
+    let html = hbs.render(
+        "index",
+        &serde_json::json!({
+            "posts": posts,
+            "pages": pages,
+            "meta": serde_json::json!({"categories": categories}),
+        }),
+    )?;
 
-    Ok(HttpResponse::Ok()
-        .content_type(ContentType::html())
-        .body(html))
+    OneBlogError::ok(utils::html(html))
 }
 
 pub async fn posts(
@@ -50,10 +45,10 @@ pub async fn posts(
     mut per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
-) -> Result<actix_web::HttpResponse, actix_web::Error> {
+) -> impl actix_web::Responder {
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
     let page = page.into_inner() as usize;
-    let counts = controller::post::count(&db).await.unwrap();
+    let counts = controller::post::count(&db).await?;
     let pages = utils::paginate(
         counts as usize,
         per_page,
@@ -64,26 +59,20 @@ pub async fn posts(
 
     let posts =
         controller::post::offset_and_limit(&db, ((page - 1) * per_page) as u64, per_page as u64)
-            .await
-            .unwrap();
-    let categories = controller::category::posts_count(&db).await;
-    let html = hbs
-        .render(
-            "index",
-            &serde_json::json!({
-                "header": "_header",
-                "sidebar":"_sidebar",
-                "posts": posts,
-                "pages": pages,
-                "categories": categories
-            }),
-        )
-        .map_err(actix_web::error::ErrorInternalServerError)
-        .unwrap();
+            .await?;
+    let categories = controller::category::posts_count(&db).await?;
+    let html = hbs.render(
+        "index",
+        &serde_json::json!({
+            "header": "_header",
+            "sidebar":"_sidebar",
+            "posts": posts,
+            "pages": pages,
+            "categories": categories
+        }),
+    )?;
 
-    Ok(HttpResponse::Ok()
-        .content_type(ContentType::html())
-        .body(html))
+    OneBlogError::ok(utils::html(html))
 }
 
 pub async fn posts_with_category(
@@ -91,21 +80,19 @@ pub async fn posts_with_category(
     mut per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
-) -> Result<actix_web::HttpResponse, actix_web::Error> {
-    let db: &sea_orm::DatabaseConnection = &db;
-    let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
+) -> impl actix_web::Responder {
     let (category_id, page_number) = path.into_inner();
-    let count = controller::category::find_posts_count(&db, category_id)
-        .await
-        .unwrap();
+    let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
+    let db: &sea_orm::DatabaseConnection = &db;
+    let count = controller::category::find_posts_count(&db, category_id).await?;
     let (category, posts) = controller::category::find_posts_with(
         &db,
         category_id,
         Some((page_number as u64 - 1) * per_page as u64),
         Some(per_page as u64),
     )
-    .await
-    .unwrap();
+    .await?
+    .unzip();
     let pages = utils::paginate(
         count as usize,
         per_page,
@@ -113,29 +100,22 @@ pub async fn posts_with_category(
         Some("<".to_string()),
         Some(">".to_string()),
     );
+    let categories = controller::category::posts_count(&db).await?;
+    let html = hbs.render(
+        "posts_with_category",
+        &serde_json::json!(
+            {
+                "header":"_header",
+                "sidebar":"_sidebar",
+                "pages": pages,
+                "cur_category": category,
+                "categories": categories,
+                "posts": posts
+            }
+        ),
+    )?;
 
-    let categories = controller::category::posts_count(&db).await;
-
-    let html = hbs
-        .render(
-            "posts_with_category",
-            &serde_json::json!(
-                {
-                    "header":"_header",
-                    "sidebar":"_sidebar",
-                    "pages": pages,
-                    "cur_category": category,
-                    "categories": categories,
-                    "posts": posts
-                }
-            ),
-        )
-        .map_err(actix_web::error::ErrorInternalServerError)
-        .unwrap();
-
-    Ok(HttpResponse::Ok()
-        .content_type(ContentType::html())
-        .body(html))
+    OneBlogError::ok(utils::html(html))
 }
 
 pub async fn post_id(
@@ -143,25 +123,19 @@ pub async fn post_id(
     mut per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
-) -> Result<actix_web::HttpResponse, actix_web::Error> {
-    let post = controller::post::find(&db, *post_id).await.unwrap();
+) -> impl actix_web::Responder {
+    let post = controller::post::find(&db, *post_id).await?;
+    let categories = controller::category::posts_count(&db).await?;
+    let html = hbs.render(
+        "post_id",
+        &serde_json::json!(
+        {
+            "header":"_header",
+            "sidebar":"_sidebar",
+            "categories": categories,
+            "post": post,
+        }),
+    )?;
 
-    let categories = controller::category::posts_count(&db).await;
-    let html = hbs
-        .render(
-            "post_id",
-            &serde_json::json!(
-            {
-                "header":"_header",
-                "sidebar":"_sidebar",
-                "categories": categories,
-                "post": post,
-            }),
-        )
-        .map_err(actix_web::error::ErrorInternalServerError)
-        .unwrap();
-
-    Ok(HttpResponse::Ok()
-        .content_type(ContentType::html())
-        .body(html))
+    OneBlogError::ok(utils::html(html))
 }

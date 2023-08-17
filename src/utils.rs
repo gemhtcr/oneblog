@@ -9,6 +9,12 @@ where
     actix_web::error::ErrorInternalServerError(e)
 }
 
+pub fn html(html: String) -> HttpResponse {
+    HttpResponse::Ok()
+        .content_type(actix_web::http::header::ContentType::html())
+        .body(html)
+}
+
 // Return a 400 with the user-representation of the validation error as body.
 // The error root cause is preserved for logging purposes.
 pub fn e400<T: std::fmt::Debug + std::fmt::Display>(e: T) -> actix_web::Error

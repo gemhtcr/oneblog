@@ -1,5 +1,6 @@
 use crate::controller;
 use crate::controller::post;
+use crate::error::OneBlogError;
 use crate::utils;
 use actix_web::http::header::ContentType;
 use actix_web::web;
@@ -11,8 +12,9 @@ pub async fn edit_form(
     post_id: web::Path<i32>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
-) -> Result<actix_web::HttpResponse, actix_web::Error> {
-    let mut post = controller::post::find(&db, *post_id).await.unwrap();
+    //) -> Result<actix_web::HttpResponse, actix_web::Error> {
+) -> impl actix_web::Responder {
+    let mut post = controller::post::find(&db, *post_id).await?;
     match post.as_mut() {
         Some(
             inner @ controller::post::Model {
@@ -24,24 +26,19 @@ pub async fn edit_form(
         }
         _ => {}
     };
-    let categories = controller::category::posts_count(&db).await;
+    let categories = controller::category::posts_count(&db).await?;
 
-    let html = hbs
-        .render(
-            "admin/edit_form",
-            &serde_json::json!({
-                "header": "admin/_header",
-                "sidebar": "admin/_sidebar",
-                "categories": categories,
-                "post": post,
-            }),
-        )
-        .map_err(actix_web::error::ErrorInternalServerError)
-        .unwrap();
+    let html = hbs.render(
+        "admin/edit_form",
+        &serde_json::json!({
+            "header": "admin/_header",
+            "sidebar": "admin/_sidebar",
+            "categories": categories,
+            "post": post,
+        }),
+    )?;
 
-    Ok(HttpResponse::Ok()
-        .content_type(ContentType::html())
-        .body(html))
+    OneBlogError::ok(utils::html(html))
 }
 
 // POST /admin/posts/{post_id}
@@ -91,23 +88,18 @@ pub async fn delete(
 pub async fn new_form(
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
-) -> Result<actix_web::HttpResponse, actix_web::Error> {
-    let categories = controller::category::posts_count(&db).await;
-    let html = hbs
-        .render(
-            "admin/new_form",
-            &serde_json::json!({
-                "header": "admin/_header",
-                "sidebar": "admin/_sidebar",
-                "categories": categories,
-            }),
-        )
-        .map_err(actix_web::error::ErrorInternalServerError)
-        .unwrap();
+) -> impl actix_web::Responder {
+    let categories = controller::category::posts_count(&db).await?;
+    let html = hbs.render(
+        "admin/new_form",
+        &serde_json::json!({
+            "header": "admin/_header",
+            "sidebar": "admin/_sidebar",
+            "categories": categories,
+        }),
+    )?;
 
-    Ok(HttpResponse::Ok()
-        .content_type(ContentType::html())
-        .body(html))
+    OneBlogError::ok(utils::html(html))
 }
 
 // POST /admin/posts/
@@ -143,10 +135,11 @@ pub async fn posts(
     mut per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
-) -> Result<actix_web::HttpResponse, actix_web::Error> {
+    //) -> Result<actix_web::HttpResponse, actix_web::Error> {
+) -> impl actix_web::Responder {
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
     let page = page.into_inner() as usize;
-    let counts = controller::post::count(&db).await.unwrap();
+    let counts = controller::post::count(&db).await?;
     let pages = utils::paginate(
         counts as usize,
         per_page,
@@ -157,24 +150,18 @@ pub async fn posts(
 
     let posts =
         controller::post::offset_and_limit(&db, ((page - 1) * per_page) as u64, per_page as u64)
-            .await
-            .unwrap();
-    let categories = controller::category::posts_count(&db).await;
-    let html = hbs
-        .render(
-            "admin/index",
-            &serde_json::json!({
-                "header": "admin/_header",
-                "sidebar":"admin/_sidebar",
-                "posts": posts,
-                "pages": pages,
-                "categories": categories
-            }),
-        )
-        .map_err(actix_web::error::ErrorInternalServerError)
-        .unwrap();
+            .await?;
+    let categories = controller::category::posts_count(&db).await?;
+    let html = hbs.render(
+        "admin/index",
+        &serde_json::json!({
+            "header": "admin/_header",
+            "sidebar":"admin/_sidebar",
+            "posts": posts,
+            "pages": pages,
+            "categories": categories
+        }),
+    )?;
 
-    Ok(HttpResponse::Ok()
-        .content_type(ContentType::html())
-        .body(html))
+    OneBlogError::ok(utils::html(html))
 }
