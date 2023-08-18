@@ -73,7 +73,6 @@ pub async fn login(
                 .finish())
         }
         Err(e) => {
-            tracing::error!("{:?}", e);
             let e = match e {
                 AuthError::InvalidCredentials(_) => LoginError::AuthError(e.into()),
                 AuthError::UnexpectedError(_) => LoginError::UnexpectedError(e.into()),

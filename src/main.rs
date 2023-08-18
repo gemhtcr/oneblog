@@ -21,24 +21,22 @@ use tracing_actix_web::TracingLogger;
 
 const DATABASE_URL: &str = "mysql://root@127.0.0.1:3306/oneblog";
 
-#[actix_web::main]
-async fn main() -> Result<(), std::io::Error> {
-    //tracing_subscriber::fmt::init();
+#[tokio::main]
+async fn main() -> Result<(), crate::error::OneBlogError> {
     let subscriber = telemetry::get_subscriber("zero2prod".into(), "info".into(), std::io::stdout);
     telemetry::init_subscriber(subscriber);
     let mut conn: ConnectOptions = DATABASE_URL.into();
     conn.sqlx_logging(false);
-    let db = Database::connect(conn).await.unwrap();
+    let db = Database::connect(conn).await?;
     let key = "super-long-and-secret-random-key-needed-to-verify-message-integrity".to_string();
     let hmac_secret = Secret::new(key);
     let secret_key = Key::from(hmac_secret.expose_secret().as_bytes());
     let message_store = CookieMessageStore::builder(secret_key.clone()).build();
     let message_framework = FlashMessagesFramework::builder(message_store).build();
     let redis_uri = Secret::new("redis://127.0.0.1:6379".to_string());
-    let redis_store = RedisSessionStore::new(redis_uri.expose_secret())
-        .await
-        .unwrap();
-    let handlebars = template_engine::init();
+    let redis_store = RedisSessionStore::new(redis_uri.expose_secret()).await?;
+    let handlebars = template_engine::init()?;
+    let ret = std::thread::available_parallelism();
     HttpServer::new(move || {
         App::new()
             .wrap(message_framework.clone())
@@ -123,5 +121,7 @@ async fn main() -> Result<(), std::io::Error> {
     })
     .bind(("127.0.0.1", 8080))?
     .run()
-    .await
+    .await?;
+
+    Ok(())
 }

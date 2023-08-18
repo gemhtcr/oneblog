@@ -17,6 +17,10 @@ pub enum OneBlogError {
     #[error(transparent)]
     AuthError(#[from] crate::authentication::AuthError),
     #[error(transparent)]
+    TemplateError(#[from] handlebars::TemplateError),
+    #[error(transparent)]
+    StdIoError(#[from] std::io::Error),
+    #[error(transparent)]
     Other(#[from] anyhow::Error),
 }
 
