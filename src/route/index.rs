@@ -64,8 +64,6 @@ pub async fn posts(
     let html = hbs.render(
         "index",
         &serde_json::json!({
-            "header": "_header",
-            "sidebar":"_sidebar",
             "posts": posts,
             "pages": pages,
             "categories": categories
@@ -105,8 +103,6 @@ pub async fn posts_with_category(
         "posts_with_category",
         &serde_json::json!(
             {
-                "header":"_header",
-                "sidebar":"_sidebar",
                 "pages": pages,
                 "cur_category": category,
                 "categories": categories,
@@ -130,8 +126,6 @@ pub async fn post_id(
         "post_id",
         &serde_json::json!(
         {
-            "header":"_header",
-            "sidebar":"_sidebar",
             "categories": categories,
             "post": post,
         }),

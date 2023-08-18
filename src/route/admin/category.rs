@@ -45,8 +45,6 @@ pub async fn index(
     let html = hbs.render(
         "admin/categories",
         &serde_json::json!({
-            "header": "admin/_header",
-            "sidebar": "admin/_sidebar",
             "pages": pages,
             "categories": categories,
             "alerts": alerts,
@@ -90,8 +88,6 @@ pub async fn page(
     let html = hbs.render(
         "admin/categories",
         &serde_json::json!({
-            "header": "admin/_header",
-            "sidebar": "admin/_sidebar",
             "pages": pages,
             "categories": categories,
         }),
@@ -111,8 +107,6 @@ pub async fn new_form(
     let html = hbs.render(
         "admin/categories_new_form",
         &serde_json::json!({
-            "header": "admin/_header",
-            "sidebar": "admin/_sidebar",
             "categories": categories,
         }),
     )?;
@@ -145,8 +139,6 @@ pub async fn edit_form(
     let html = hbs.render(
         "admin/categories_edit_form",
         &serde_json::json!({
-            "header": "admin/_header",
-            "sidebar": "admin/_sidebar",
             "category": category,
         }),
     )?;
