@@ -2,7 +2,6 @@
 use actix_files::Files;
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
-use actix_web::cookie::Key;
 use actix_web::dev::Server;
 use actix_web::web::Data;
 use actix_web::{web, App, HttpServer};
@@ -12,31 +11,30 @@ use actix_web_lab::middleware::from_fn;
 use entities::{prelude::*, *};
 use handlebars::Handlebars;
 use oneblog::*;
-use sea_orm::ConnectOptions;
-use sea_orm::Database;
 use secrecy::ExposeSecret;
 use secrecy::Secret;
 use tracing::info;
 use tracing_actix_web::TracingLogger;
 
-const DATABASE_URL: &str = "mysql://root@127.0.0.1:3306/oneblog";
 
 #[tokio::main]
 async fn main() -> Result<(), crate::error::OneBlogError> {
+    // telementry
     let subscriber = telemetry::get_subscriber("zero2prod".into(), "info".into(), std::io::stdout);
     telemetry::init_subscriber(subscriber);
-    let mut conn: ConnectOptions = DATABASE_URL.into();
-    conn.sqlx_logging(false);
-    let db = Database::connect(conn).await?;
+    // database
+    let db = database::init().await?;
+    // Flash message
     let key = "super-long-and-secret-random-key-needed-to-verify-message-integrity".to_string();
     let hmac_secret = Secret::new(key);
-    let secret_key = Key::from(hmac_secret.expose_secret().as_bytes());
+    let secret_key = actix_web::cookie::Key::from(hmac_secret.expose_secret().as_bytes());
     let message_store = CookieMessageStore::builder(secret_key.clone()).build();
     let message_framework = FlashMessagesFramework::builder(message_store).build();
+    // Session
     let redis_uri = Secret::new("redis://127.0.0.1:6379".to_string());
     let redis_store = RedisSessionStore::new(redis_uri.expose_secret()).await?;
+    // Template engine
     let handlebars = template_engine::init()?;
-    let ret = std::thread::available_parallelism();
     HttpServer::new(move || {
         App::new()
             .wrap(message_framework.clone())
