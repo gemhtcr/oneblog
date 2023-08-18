@@ -1,20 +1,12 @@
-#![allow(unused)]
-use actix_files::Files;
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
-use actix_web::dev::Server;
-use actix_web::web::Data;
 use actix_web::{web, App, HttpServer};
 use actix_web_flash_messages::storage::CookieMessageStore;
 use actix_web_flash_messages::FlashMessagesFramework;
 use actix_web_lab::middleware::from_fn;
-use entities::{prelude::*, *};
-use handlebars::Handlebars;
 use oneblog::*;
 use secrecy::ExposeSecret;
 use secrecy::Secret;
-use tracing::info;
-use tracing_actix_web::TracingLogger;
 
 #[tokio::main]
 async fn main() -> Result<(), crate::error::OneBlogError> {

@@ -1,9 +1,7 @@
 use crate::authentication;
 use crate::entities::prelude::Users;
-use crate::entities::users;
 pub use crate::entities::users::ActiveModel;
 use crate::entities::users::Model;
-use crate::error::OneBlogError;
 use sea_orm::*;
 use secrecy::ExposeSecret;
 use secrecy::Secret;
@@ -13,7 +11,6 @@ pub async fn create(
     db: &DatabaseConnection,
     username: &str,
     raw_password: Secret<String>,
-    category_id: Option<i32>,
 ) -> Result<Model, crate::error::OneBlogError> {
     let password_hash = authentication::password::compute_password_hash(raw_password)?;
     let uuid = uuid::Uuid::new_v4();
@@ -21,7 +18,6 @@ pub async fn create(
         user_id: ActiveValue::Set(uuid.to_string()),
         username: ActiveValue::Set(username.to_string()),
         password_hash: ActiveValue::Set(password_hash.expose_secret().clone()),
-        ..Default::default()
     }
     .insert(db)
     .await?;

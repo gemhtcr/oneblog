@@ -1,17 +1,11 @@
 use crate::controller;
 use crate::error::OneBlogError;
 use crate::utils;
-use actix_web::error::InternalError;
-use actix_web::http::header::ContentType;
-use actix_web::http::header::LOCATION;
 use actix_web::web;
-use actix_web::HttpResponse;
-use actix_web_flash_messages::FlashMessage;
-use actix_web_flash_messages::IncomingFlashMessages;
 
 // GET /admin
 pub async fn index(
-    mut per_page: Option<web::Query<usize>>,
+    per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
     //) -> Result<actix_web::HttpResponse, actix_web::Error> {
@@ -42,7 +36,7 @@ pub async fn index(
 
 pub async fn posts(
     page: web::Path<i32>,
-    mut per_page: Option<web::Query<usize>>,
+    per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
 ) -> impl actix_web::Responder {
@@ -75,16 +69,16 @@ pub async fn posts(
 
 pub async fn posts_with_category(
     path: web::Path<(i32, i32)>,
-    mut per_page: Option<web::Query<usize>>,
+    per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
 ) -> impl actix_web::Responder {
     let (category_id, page_number) = path.into_inner();
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
     let db: &sea_orm::DatabaseConnection = &db;
-    let count = controller::category::find_posts_count(&db, category_id).await?;
+    let count = controller::category::find_posts_count(db, category_id).await?;
     let (category, posts) = controller::category::find_posts_with(
-        &db,
+        db,
         category_id,
         Some((page_number as u64 - 1) * per_page as u64),
         Some(per_page as u64),
@@ -98,7 +92,7 @@ pub async fn posts_with_category(
         Some("<".to_string()),
         Some(">".to_string()),
     );
-    let categories = controller::category::posts_count(&db).await?;
+    let categories = controller::category::posts_count(db).await?;
     let html = hbs.render(
         "posts_with_category",
         &serde_json::json!(
@@ -116,7 +110,6 @@ pub async fn posts_with_category(
 
 pub async fn post_id(
     post_id: web::Path<i32>,
-    mut per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
 ) -> impl actix_web::Responder {

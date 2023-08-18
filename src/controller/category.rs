@@ -85,8 +85,7 @@ pub async fn find_posts_with(
         })
         .into();
     let ret = fut.await;
-    let ret = ret.transpose();
-    ret
+    ret.transpose()
 }
 
 pub async fn find_posts_count(db: &DatabaseConnection, id: i32) -> Result<u64, DbErr> {

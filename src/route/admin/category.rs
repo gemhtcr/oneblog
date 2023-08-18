@@ -1,10 +1,7 @@
 use crate::controller;
-use crate::controller::category;
 use crate::error::OneBlogError;
 use crate::utils;
-use actix_web::http::header::ContentType;
 use actix_web::web;
-use actix_web::HttpResponse;
 use actix_web_flash_messages::FlashMessage;
 use actix_web_flash_messages::IncomingFlashMessages;
 
@@ -15,7 +12,7 @@ struct MyFlashMessage {
 }
 // GET admin/categories
 pub async fn index(
-    mut per_page: Option<web::Query<usize>>,
+    per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
     flash_messages: IncomingFlashMessages,
@@ -54,15 +51,10 @@ pub async fn index(
     OneBlogError::ok(utils::html(html))
 }
 
-pub struct Pagination {
-    page_number: i32,
-    per_page: i32,
-}
-
 // GET admin/categories/page/{page_number}
 pub async fn page(
     page: web::Path<i32>,
-    mut per_page: Option<web::Query<usize>>,
+    per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
     //) -> Result<actix_web::HttpResponse, actix_web::Error> {
@@ -120,10 +112,10 @@ pub struct NewFormData {
     name: String,
 }
 pub async fn new(
-    mut form: web::Form<NewFormData>,
+    form: web::Form<NewFormData>,
     db: web::Data<sea_orm::DatabaseConnection>,
 ) -> impl actix_web::Responder {
-    let mut form = form.into_inner();
+    let form = form.into_inner();
     let _model = controller::category::create(&db, &form.name).await?;
     FlashMessage::success(format!(r#"Created "{}" with success"#, form.name)).send();
     OneBlogError::ok(utils::see_other("/admin/categories"))
@@ -135,7 +127,7 @@ pub async fn edit_form(
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
 ) -> impl actix_web::Responder {
-    let mut category = controller::category::find(&db, *category_id).await?;
+    let category = controller::category::find(&db, *category_id).await?;
     let html = hbs.render(
         "admin/categories_edit_form",
         &serde_json::json!({
@@ -155,11 +147,10 @@ pub struct EditFormData {
 pub async fn edit(
     edit_form_data: web::Form<EditFormData>,
     db: web::Data<sea_orm::DatabaseConnection>,
-    hbs: web::Data<handlebars::Handlebars<'_>>,
 ) -> impl actix_web::Responder {
     tracing::info!(?edit_form_data);
     // convert "none" into None
-    let mut edit_form_data = edit_form_data.into_inner();
+    let edit_form_data = edit_form_data.into_inner();
     let _model =
         controller::category::update(&db, edit_form_data.category_id, &edit_form_data.name).await?;
 

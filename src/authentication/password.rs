@@ -114,13 +114,13 @@ pub fn verify_password_hash(
         .map_err(AuthError::InvalidCredentials)
 }
 
-#[tracing::instrument(name = "Change password", skip(password, db))]
+#[tracing::instrument(name = "Change password", skip(password, _db))]
 pub async fn change_password(
     user_id: uuid::Uuid,
     password: Secret<String>,
-    db: &PgPool,
+    _db: &PgPool,
 ) -> Result<(), anyhow::Error> {
-    let password_hash = spawn_blocking_with_tracing(move || compute_password_hash(password))
+    let _password_hash = spawn_blocking_with_tracing(move || compute_password_hash(password))
         .await?
         .context("Failed to hash password")?;
     /*

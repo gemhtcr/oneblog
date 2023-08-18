@@ -1,12 +1,7 @@
 use crate::controller;
 use crate::error::OneBlogError;
 use crate::utils;
-use actix_web::error::InternalError;
-use actix_web::http::header::ContentType;
-use actix_web::http::header::LOCATION;
 use actix_web::web;
-use actix_web::HttpResponse;
-use actix_web_flash_messages::FlashMessage;
 use actix_web_flash_messages::IncomingFlashMessages;
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -17,7 +12,7 @@ struct MyFlashMessage {
 
 // GET /admin
 pub async fn index(
-    mut per_page: Option<web::Query<usize>>,
+    per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
     flash_messages: IncomingFlashMessages,

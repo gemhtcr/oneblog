@@ -1,4 +1,5 @@
-#![allow(unused)]
+#![forbid(unsafe_code)]
+#![allow(clippy::result_large_err)]
 pub mod authentication;
 pub mod controller;
 pub mod database;

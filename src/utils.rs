@@ -53,7 +53,7 @@ pub struct Page {
 
 // 1-indexed
 pub fn paginate(
-    mut total: usize,
+    total: usize,
     per_page: usize,
     active: usize,
     previous: Option<String>,
@@ -67,7 +67,6 @@ pub fn paginate(
         return vec![];
     }
     let mut pages = (1..=total_pages)
-        .into_iter()
         .map(|index| Page {
             page: index as i32,
             display: index.to_string(),

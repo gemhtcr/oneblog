@@ -1,10 +1,7 @@
 use crate::controller;
-use crate::controller::post;
 use crate::error::OneBlogError;
 use crate::utils;
-use actix_web::http::header::ContentType;
 use actix_web::web;
-use actix_web::HttpResponse;
 use actix_web_flash_messages::FlashMessage;
 
 // GET /admin/posts/{post_id}/edit
@@ -15,17 +12,15 @@ pub async fn edit_form(
     //) -> Result<actix_web::HttpResponse, actix_web::Error> {
 ) -> impl actix_web::Responder {
     let mut post = controller::post::find(&db, *post_id).await?;
-    match post.as_mut() {
+    if let 
         Some(
             inner @ controller::post::Model {
                 category_name: None,
                 ..
             },
-        ) => {
+        ) = post.as_mut() {
             inner.category_name = Some("None".to_string());
         }
-        _ => {}
-    };
     let categories = controller::category::posts_count(&db).await?;
 
     let html = hbs.render(
@@ -52,8 +47,6 @@ pub struct EditFormData {
 pub async fn edit(
     edit_form_data: web::Form<EditFormData>,
     db: web::Data<sea_orm::DatabaseConnection>,
-    hbs: web::Data<handlebars::Handlebars<'_>>,
-    //) -> Result<actix_web::HttpResponse, actix_web::Error> {
 ) -> impl actix_web::Responder {
     tracing::info!(?edit_form_data);
     // convert "none" into None
@@ -114,7 +107,7 @@ pub struct NewFormData {
     category_name: Option<String>,
 }
 pub async fn new(
-    mut form: web::Form<NewFormData>,
+    form: web::Form<NewFormData>,
     db: web::Data<sea_orm::DatabaseConnection>,
 ) -> impl actix_web::Responder {
     let mut form = form.into_inner();
@@ -135,10 +128,9 @@ pub async fn new(
 
 pub async fn posts(
     page: web::Path<i32>,
-    mut per_page: Option<web::Query<usize>>,
+    per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
-    //) -> Result<actix_web::HttpResponse, actix_web::Error> {
 ) -> impl actix_web::Responder {
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
     let page = page.into_inner() as usize;

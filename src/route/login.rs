@@ -5,7 +5,6 @@ use crate::session_state::TypedSession;
 use crate::utils;
 use crate::utils::error_chain_fmt;
 use actix_web::error::InternalError;
-use actix_web::http::header::ContentType;
 use actix_web::http::header::LOCATION;
 use actix_web::web;
 use actix_web::HttpResponse;
@@ -13,7 +12,6 @@ use actix_web_flash_messages::FlashMessage;
 use actix_web_flash_messages::IncomingFlashMessages;
 use actix_web_flash_messages::Level;
 use secrecy::Secret;
-use std::fmt::Write;
 
 #[derive(serde::Serialize)]
 struct MyFlashMessage {

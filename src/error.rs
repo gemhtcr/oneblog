@@ -1,7 +1,5 @@
-use actix_web::body::BoxBody;
+#![allow(clippy::result_large_err)]
 use actix_web::http::StatusCode;
-use actix_web::HttpResponse;
-use actix_web::ResponseError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -36,7 +34,7 @@ impl OneBlogError {
 impl actix_web::ResponseError for OneBlogError {
     fn status_code(&self) -> StatusCode {
         match self {
-            OneBlogError::InvalidParameter(err) => {
+            OneBlogError::InvalidParameter(_err) => {
                 actix_web::http::StatusCode::INTERNAL_SERVER_ERROR
             }
             _ => actix_web::http::StatusCode::BAD_REQUEST,
