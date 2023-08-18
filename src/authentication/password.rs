@@ -45,7 +45,7 @@ async fn get_stored_credentials(
     .map(|row| (row.user_id, Secret::new(row.password_hash)));
     */
     //Ok(row)
-    let r = Users::find()
+    Users::find()
         .filter(users::Column::Username.eq(username))
         .one(db)
         .await?
@@ -55,14 +55,12 @@ async fn get_stored_credentials(
                  password_hash,
                  ..
              }| {
-                (
-                    uuid::Uuid::from_str(&user_id).unwrap(),
-                    Secret::new(password_hash),
-                )
+                uuid::Uuid::from_str(&user_id)
+                    .map_err(anyhow::Error::new)
+                    .map(|uuid| (uuid, Secret::new(password_hash)))
             },
-        );
-
-    Ok(r)
+        )
+        .transpose()
 }
 
 #[tracing::instrument(name = "Validate credentials", skip(credentials, db))]
@@ -148,7 +146,7 @@ pub fn compute_password_hash(password: Secret<String>) -> Result<Secret<String>,
     let password_hash = Argon2::new(
         Algorithm::Argon2id,
         Version::V0x13,
-        Params::new(15000, 2, 1, None).unwrap(),
+        Params::new(15000, 2, 1, None)?,
     )
     .hash_password(password.expose_secret().as_bytes(), &salt)?
     .to_string();

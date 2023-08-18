@@ -24,7 +24,7 @@ handlebars = { version="4.3.7" , features=["dir_source", "script_helper"]}
 thiserror = "1"
 uuid = { version = "1", features = ["v4", "serde"] }
 rand = { version = "0.8", features=["std_rng"] }
-argon2 = { version = "0.4", features = ["std"] }
+argon2 = { version = "0.5", features = ["std"] }
 tracing-actix-web = "0.7"
 secrecy = { version = "0.8", features = ["serde"] }
 tracing-bunyan-formatter = "0.3"

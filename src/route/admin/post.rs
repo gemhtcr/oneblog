@@ -53,7 +53,8 @@ pub async fn edit(
     edit_form_data: web::Form<EditFormData>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
-) -> Result<actix_web::HttpResponse, actix_web::Error> {
+    //) -> Result<actix_web::HttpResponse, actix_web::Error> {
+) -> impl actix_web::Responder {
     tracing::info!(?edit_form_data);
     // convert "none" into None
     let mut edit_form_data = edit_form_data.into_inner();
@@ -67,21 +68,24 @@ pub async fn edit(
         &edit_form_data.description,
         edit_form_data.category_name.to_owned(),
     )
-    .await
-    .unwrap();
+    .await?;
 
     FlashMessage::success(format!(r#"Edited "{}" with success"#, edit_form_data.title)).send();
-    Ok(utils::see_other("/admin"))
+    OneBlogError::ok(utils::see_other("/admin"))
 }
 
 // GET /admin/posts/{post_id}
 pub async fn delete(
     post_id: web::Path<i32>,
     db: web::Data<sea_orm::DatabaseConnection>,
-) -> Result<actix_web::HttpResponse, actix_web::Error> {
-    let _ret = controller::post::destroy(&db, *post_id).await.unwrap();
-    FlashMessage::success("Deleted a post with success").send();
-    Ok(utils::see_other("/admin"))
+) -> impl actix_web::Responder {
+    let deleted = controller::post::destroy(&db, *post_id).await?;
+    tracing::debug!(?deleted);
+    match deleted.rows_affected {
+        1.. => FlashMessage::success("Deleted a post with success").send(),
+        _ => FlashMessage::warning("Failed to delete a post cause it didn't exist").send(),
+    }
+    OneBlogError::ok(utils::see_other("/admin"))
 }
 
 // GET /admin/posts/new/
@@ -112,7 +116,7 @@ pub struct NewFormData {
 pub async fn new(
     mut form: web::Form<NewFormData>,
     db: web::Data<sea_orm::DatabaseConnection>,
-) -> Result<actix_web::HttpResponse, actix_web::Error> {
+) -> impl actix_web::Responder {
     let mut form = form.into_inner();
     // convert "none" into None
     form.category_name = form
@@ -124,10 +128,9 @@ pub async fn new(
         &form.description,
         form.category_name.to_owned(),
     )
-    .await
-    .unwrap();
+    .await?;
     FlashMessage::success(format!(r#"Created "{}" with success"#, form.title)).send();
-    Ok(utils::see_other("/admin"))
+    OneBlogError::ok(utils::see_other("/admin"))
 }
 
 pub async fn posts(

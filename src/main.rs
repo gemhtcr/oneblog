@@ -16,7 +16,6 @@ use secrecy::Secret;
 use tracing::info;
 use tracing_actix_web::TracingLogger;
 
-
 #[tokio::main]
 async fn main() -> Result<(), crate::error::OneBlogError> {
     // telementry

@@ -1,7 +1,7 @@
+use crate::error::OneBlogError;
 use handlebars::handlebars_helper;
 use sea_orm::prelude::DateTimeUtc;
 use serde_json::Value as Json;
-use crate::error::OneBlogError;
 
 pub fn init() -> Result<handlebars::Handlebars<'static>, OneBlogError> {
     let mut handlebars = handlebars::Handlebars::new();
