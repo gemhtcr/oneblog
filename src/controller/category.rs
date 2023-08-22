@@ -7,9 +7,6 @@ use crate::entities::prelude::Post;
 use futures::stream::StreamExt;
 use futures::FutureExt;
 use sea_orm::*;
-
-// Category controller
-
 // create is to create a category
 pub async fn create(db: &DatabaseConnection, name: &str) -> Result<Model, DbErr> {
     ActiveModel {
@@ -84,14 +81,12 @@ pub async fn find_posts_with(
                 .map(|vec| (inner, vec))
         })
         .into();
-    let ret = fut.await;
-    ret.transpose()
+    fut.await.transpose()
 }
 
 pub async fn find_posts_count(db: &DatabaseConnection, id: i32) -> Result<u64, DbErr> {
     let Some(cat) = find(db, id).await?
-    else {
-        // Note that we return 0 to simplify edge cases if model doesn't exist
+    else { // Note that we return 0 to simplify edge cases if model doesn't exist
         return Ok(0);
     };
 

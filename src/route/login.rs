@@ -43,7 +43,6 @@ pub struct FormData {
     username: String,
     password: Secret<String>,
 }
-
 #[tracing::instrument(
     skip(form, db, session),
     fields(username=tracing::field::Empty, user_id=tracing::field::Empty)
@@ -85,6 +84,7 @@ fn login_redirect(e: LoginError) -> InternalError<LoginError> {
     let response = HttpResponse::SeeOther()
         .insert_header((LOCATION, "/login"))
         .finish();
+
     InternalError::from_response(e, response)
 }
 
@@ -95,7 +95,6 @@ pub enum LoginError {
     #[error("Something went wrong")]
     UnexpectedError(#[from] anyhow::Error),
 }
-
 impl std::fmt::Debug for LoginError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         error_chain_fmt(self, f)

@@ -9,25 +9,21 @@ pub async fn edit_form(
     post_id: web::Path<i32>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
-    //) -> Result<actix_web::HttpResponse, actix_web::Error> {
 ) -> impl actix_web::Responder {
     let mut post = controller::post::find(&db, *post_id).await?;
-    if let 
-        Some(
-            inner @ controller::post::Model {
-                category_name: None,
-                ..
-            },
-        ) = post.as_mut() {
-            inner.category_name = Some("None".to_string());
-        }
+    if let Some(
+        inner @ controller::post::Model {
+            category_name: None,
+            ..
+        },
+    ) = post.as_mut()
+    {
+        inner.category_name = Some("None".to_string());
+    }
     let categories = controller::category::posts_count(&db).await?;
-
     let html = hbs.render(
         "admin/edit_form",
         &serde_json::json!({
-            "header": "admin/_header",
-            "sidebar": "admin/_sidebar",
             "categories": categories,
             "post": post,
         }),
@@ -62,8 +58,8 @@ pub async fn edit(
         edit_form_data.category_name.to_owned(),
     )
     .await?;
-
     FlashMessage::success(format!(r#"Edited "{}" with success"#, edit_form_data.title)).send();
+
     OneBlogError::ok(utils::see_other("/admin"))
 }
 
@@ -78,6 +74,7 @@ pub async fn delete(
         1.. => FlashMessage::success("Deleted a post with success").send(),
         _ => FlashMessage::warning("Failed to delete a post cause it didn't exist").send(),
     }
+
     OneBlogError::ok(utils::see_other("/admin"))
 }
 
@@ -90,8 +87,6 @@ pub async fn new_form(
     let html = hbs.render(
         "admin/new_form",
         &serde_json::json!({
-            "header": "admin/_header",
-            "sidebar": "admin/_sidebar",
             "categories": categories,
         }),
     )?;
@@ -123,6 +118,7 @@ pub async fn new(
     )
     .await?;
     FlashMessage::success(format!(r#"Created "{}" with success"#, form.title)).send();
+
     OneBlogError::ok(utils::see_other("/admin"))
 }
 
@@ -142,7 +138,6 @@ pub async fn posts(
         Some("<".to_string()),
         Some(">".to_string()),
     );
-
     let posts =
         controller::post::offset_and_limit(&db, ((page - 1) * per_page) as u64, per_page as u64)
             .await?;
@@ -150,8 +145,6 @@ pub async fn posts(
     let html = hbs.render(
         "admin/index",
         &serde_json::json!({
-            "header": "admin/_header",
-            "sidebar":"admin/_sidebar",
             "posts": posts,
             "pages": pages,
             "categories": categories

@@ -26,7 +26,6 @@ pub async fn index(
         Some("<".to_string()),
         Some(">".to_string()),
     );
-
     let alerts = flash_messages
         .iter()
         .map(|msg| MyFlashMessage {
@@ -35,13 +34,10 @@ pub async fn index(
         })
         .collect::<Vec<_>>();
     let posts = controller::post::offset_and_limit(&db, 0, per_page as u64).await?;
-
     let categories = controller::category::posts_count(&db).await?;
     let html = hbs.render(
         "admin/index",
         &serde_json::json!({
-            "header": "admin/_header",
-            "sidebar": "admin/_sidebar",
             "posts": posts,
             "pages": pages,
             "categories": categories,

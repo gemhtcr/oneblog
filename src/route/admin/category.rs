@@ -16,7 +16,6 @@ pub async fn index(
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
     flash_messages: IncomingFlashMessages,
-    //) -> Result<actix_web::HttpResponse, actix_web::Error> {
 ) -> impl actix_web::Responder {
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
     let categories =
@@ -30,7 +29,6 @@ pub async fn index(
         Some("<".to_string()),
         Some(">".to_string()),
     );
-
     let alerts = flash_messages
         .iter()
         .map(|msg| MyFlashMessage {
@@ -38,7 +36,6 @@ pub async fn index(
             level: msg.level().to_string(),
         })
         .collect::<Vec<_>>();
-
     let html = hbs.render(
         "admin/categories",
         &serde_json::json!({
@@ -57,7 +54,6 @@ pub async fn page(
     per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
-    //) -> Result<actix_web::HttpResponse, actix_web::Error> {
 ) -> impl actix_web::Responder {
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
     let page = page.into_inner();
@@ -76,7 +72,6 @@ pub async fn page(
         Some("<".to_string()),
         Some(">".to_string()),
     );
-
     let html = hbs.render(
         "admin/categories",
         &serde_json::json!({
@@ -118,6 +113,7 @@ pub async fn new(
     let form = form.into_inner();
     let _model = controller::category::create(&db, &form.name).await?;
     FlashMessage::success(format!(r#"Created "{}" with success"#, form.name)).send();
+
     OneBlogError::ok(utils::see_other("/admin/categories"))
 }
 
@@ -153,8 +149,8 @@ pub async fn edit(
     let edit_form_data = edit_form_data.into_inner();
     let _model =
         controller::category::update(&db, edit_form_data.category_id, &edit_form_data.name).await?;
-
     FlashMessage::success(format!(r#"Edited "{}" with success"#, edit_form_data.name)).send();
+
     OneBlogError::ok(utils::see_other("/admin/categories"))
 }
 
@@ -166,5 +162,6 @@ pub async fn delete(
 ) -> impl actix_web::Responder {
     let _ret = controller::category::destroy(&db, *category_id).await?;
     FlashMessage::success("Deleted a category with success").send();
+
     OneBlogError::ok(utils::see_other("/admin/categories"))
 }

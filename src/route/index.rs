@@ -8,7 +8,6 @@ pub async fn index(
     per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
-    //) -> Result<actix_web::HttpResponse, actix_web::Error> {
 ) -> impl actix_web::Responder {
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
     let counts = controller::post::count(&db).await?;
@@ -20,7 +19,6 @@ pub async fn index(
         Some(">".to_string()),
     );
     let posts = controller::post::offset_and_limit(&db, 0, per_page as u64).await?;
-
     let categories = controller::category::posts_count(&db).await?;
     let html = hbs.render(
         "index",
@@ -50,7 +48,6 @@ pub async fn posts(
         Some("<".to_string()),
         Some(">".to_string()),
     );
-
     let posts =
         controller::post::offset_and_limit(&db, ((page - 1) * per_page) as u64, per_page as u64)
             .await?;
@@ -97,9 +94,9 @@ pub async fn posts_with_category(
         "posts_with_category",
         &serde_json::json!(
             {
-                "pages": pages,
-                "cur_category": category,
                 "categories": categories,
+                "cur_category": category,
+                "pages": pages,
                 "posts": posts
             }
         ),
