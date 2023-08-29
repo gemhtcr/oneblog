@@ -8,7 +8,6 @@ use argon2::password_hash::SaltString;
 use argon2::{Algorithm, Argon2, Params, PasswordHash, PasswordHasher, PasswordVerifier, Version};
 use sea_orm::*;
 use secrecy::{ExposeSecret, Secret};
-use sqlx::PgPool;
 use std::str::FromStr;
 
 #[derive(thiserror::Error, Debug)]
@@ -30,21 +29,6 @@ async fn get_stored_credentials(
     username: &str,
     db: &sea_orm::DatabaseConnection,
 ) -> Result<Option<(uuid::Uuid, Secret<String>)>, anyhow::Error> {
-    /*
-    let row = sqlx::query!(
-        r#"
-        SELECT user_id, password_hash
-        FROM users
-        WHERE username = $1
-        "#,
-        username,
-    )
-    .fetch_optional(pool)
-    .await
-    .context("Failed to performed a query to retrieve stored credentials.")?
-    .map(|row| (row.user_id, Secret::new(row.password_hash)));
-    */
-    //Ok(row)
     Users::find()
         .filter(users::Column::Username.eq(username))
         .one(db)
@@ -114,11 +98,10 @@ pub fn verify_password_hash(
         .map_err(AuthError::InvalidCredentials)
 }
 
-#[tracing::instrument(name = "Change password", skip(password, _db))]
+#[tracing::instrument(name = "Change password", skip(password))]
 pub async fn change_password(
     user_id: uuid::Uuid,
     password: Secret<String>,
-    _db: &PgPool,
 ) -> Result<(), anyhow::Error> {
     let _password_hash = spawn_blocking_with_tracing(move || compute_password_hash(password))
         .await?
