@@ -10,6 +10,7 @@ struct MyFlashMessage {
     content: String,
     level: String,
 }
+
 // GET admin/categories
 pub async fn index(
     per_page: Option<web::Query<usize>>,
@@ -17,6 +18,7 @@ pub async fn index(
     hbs: web::Data<handlebars::Handlebars<'_>>,
     flash_messages: IncomingFlashMessages,
 ) -> impl actix_web::Responder {
+    let _a: usize = 1;
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
     let categories =
         controller::category::offset_and_limit(&db, Some(0), Some(per_page as u64)).await?;

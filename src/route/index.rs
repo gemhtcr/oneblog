@@ -123,3 +123,47 @@ pub async fn post_id(
 
     OneBlogError::ok(utils::html(html))
 }
+
+#[derive(serde::Deserialize)]
+pub struct FormData {
+    pattern: String,
+}
+
+pub async fn search(
+    web::Form(form): web::Form<FormData>,
+    per_page: Option<web::Query<u64>>,
+    db: web::Data<sea_orm::DatabaseConnection>,
+    hbs: web::Data<handlebars::Handlebars<'_>>,
+) -> impl actix_web::Responder {
+    let categories = controller::category::posts_count(&db).await?;
+    let per_page = per_page.map(web::Query::into_inner);
+    let marked = format!("<mark>{}</mark>", form.pattern);
+    let searched = controller::post::search(&db, form.pattern.clone(), per_page)
+        .await?
+        .into_iter()
+        .map(|mut post| {
+            // Replace with marked tag
+            if let Some(index) = post.title.to_lowercase().find(&form.pattern) {
+                post.title
+                    .replace_range(index..index + form.pattern.len(), &marked);
+            }
+            post
+        })
+        .collect::<Vec<_>>();
+    let pages = utils::paginate(
+        searched.len(),
+        3,
+        1,
+        Some("<".to_string()),
+        Some(">".to_string()),
+    );
+    let json = &serde_json::json!(
+    {
+        "searched": searched,
+        "pages": pages,
+        "meta": serde_json::json!({"categories": categories}),
+    });
+    let html = hbs.render("searched", json)?;
+
+    OneBlogError::ok(utils::html(html))
+}

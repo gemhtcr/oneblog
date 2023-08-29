@@ -27,6 +27,20 @@ pub async fn count(db: &DatabaseConnection) -> Result<u64, DbErr> {
     Post::find().count(db).await
 }
 
+pub async fn search(
+    db: &DatabaseConnection,
+    mut pattern: String,
+    limit: Option<u64>,
+) -> Result<Vec<Model>, DbErr> {
+    pattern.insert(0, '%');
+    pattern.push('%');
+    Post::find()
+        .filter(post::Column::Title.like(&pattern))
+        .limit(limit)
+        .all(db)
+        .await
+}
+
 // find is to find by id
 pub async fn find(db: &DatabaseConnection, id: i32) -> Result<Option<Model>, DbErr> {
     Post::find_by_id(id).one(db).await

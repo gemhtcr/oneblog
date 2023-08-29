@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  {{> _head }}
+  <body>
+    {{> _header }}
+    {{> _sidebar meta }}
+    <main id="main" class="main">
+      <div class="pagetitle">
+        <nav>
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item active">Home</li>
+          </ol>
+        </nav>
+      </div><!-- End Page Title -->
+      <section class="section">
+        <div class="row align-items-top">
+          <div class="col-lg-6">
+            <!-- Card with titles, buttons, and links -->
+            {{#each searched}}
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">
+                  {{{this.title}}}
+                </h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{this.category_name}}</h6>
+                <p class="card-text">{{this.description}}</p>
+                <p class="card-text"><a href="/posts/{{this.id}}" class="btn btn-primary">More</a></p>
+              </div>
+            </div><!-- End Card with titles, buttons, and links -->
+            {{/each}}
+            <nav aria-label="...">
+              <ul class="pagination">
+                {{#each pages}}
+                <li class="page-item"><a class="page-link {{#if this.active}}active{{/if}} {{#if this.disabled}}disabled{{/if}}" href="{{#if this.disabled}}#{{else}}/posts/page/{{this.page}}{{/if}}">{{this.display}}</a></li>
+                {{/each}}
+              </ul>
+            </nav><!-- End Disabled and active states -->
+      </section>
+    </main><!-- End #main -->
+    {{> _footer}}
+    <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+    {{> _script}}
+  </body>
+</html>
