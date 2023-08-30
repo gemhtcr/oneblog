@@ -31,14 +31,17 @@ pub async fn search(
     db: &DatabaseConnection,
     pattern: String,
     page: u64,
-    per_page: i32,
+    per_page: u64,
 ) -> Result<(Vec<post::Model>, sea_orm::ItemsAndPagesNumber), DbErr> {
+    let pattern = format!("%{}%", pattern);
     let paginator = Post::find()
-        .apply_if(Some(&pattern), |query, v| {
-            query.filter(post::Column::Title.contains(format!("%{}%", v).as_str()))
-        })
+        .filter(
+            sea_orm::Condition::any()
+                .add(sea_orm::Condition::all().add(post::Column::Title.like(&pattern)))
+                .add(sea_orm::Condition::all().add(post::Column::Description.like(&pattern))),
+        )
         .order_by_desc(post::Column::Updated)
-        .paginate(db, per_page as u64);
+        .paginate(db, per_page);
     let info = paginator.num_items_and_pages().await?;
 
     paginator.fetch_page(page - 1).await.map(|p| (p, info))

@@ -154,19 +154,24 @@ pub async fn search_with_page(
             number_of_items,
             number_of_pages: _,
         },
-    ) = controller::post::search(
-        &db,
-        form.pattern.clone(),
-        page_number as u64,
-        per_page as i32,
-    )
-    .await?;
+    ) = controller::post::search(&db, form.pattern.clone(), page_number as u64, per_page).await?;
     // Replace with <mark> tag
+    tracing::info!(?searched);
     searched.iter_mut().for_each(|post| {
+        // Title
         if let Some(index) = post.title.to_lowercase().find(&form.pattern) {
             let substr = &post.title[index..index + form.pattern.len()];
             post.title.replace_range(
                 index..index + form.pattern.len(),
+                &format!("<mark>{}</mark>", substr),
+            );
+        }
+        // Description
+        if let Some(index) = post.description.to_lowercase().find(&form.pattern) {
+            let substr = &post.description[index..(index + form.pattern.len())];
+            tracing::info!(?substr);
+            post.description.replace_range(
+                index..(index + form.pattern.len()),
                 &format!("<mark>{}</mark>", substr),
             );
         }
