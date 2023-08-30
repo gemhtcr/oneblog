@@ -29,16 +29,19 @@ pub async fn count(db: &DatabaseConnection) -> Result<u64, DbErr> {
 
 pub async fn search(
     db: &DatabaseConnection,
-    mut pattern: String,
-    limit: Option<u64>,
-) -> Result<Vec<Model>, DbErr> {
-    pattern.insert(0, '%');
-    pattern.push('%');
-    Post::find()
-        .filter(post::Column::Title.like(&pattern))
-        .limit(limit)
-        .all(db)
-        .await
+    pattern: String,
+    page: u64,
+    per_page: i32,
+) -> Result<(Vec<post::Model>, sea_orm::ItemsAndPagesNumber), DbErr> {
+    let paginator = Post::find()
+        .apply_if(Some(&pattern), |query, v| {
+            query.filter(post::Column::Title.contains(format!("%{}%", v).as_str()))
+        })
+        .order_by_desc(post::Column::Updated)
+        .paginate(db, per_page as u64);
+    let info = paginator.num_items_and_pages().await?;
+
+    paginator.fetch_page(page - 1).await.map(|p| (p, info))
 }
 
 // find is to find by id

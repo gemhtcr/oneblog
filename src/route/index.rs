@@ -125,41 +125,66 @@ pub async fn post_id(
 }
 
 #[derive(serde::Deserialize)]
-pub struct FormData {
+pub struct SearchFormData {
     pattern: String,
 }
 
 pub async fn search(
-    web::Form(form): web::Form<FormData>,
+    form: web::Form<SearchFormData>,
     per_page: Option<web::Query<u64>>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
 ) -> impl actix_web::Responder {
-    let categories = controller::category::posts_count(&db).await?;
-    let per_page = per_page.map(web::Query::into_inner);
-    let marked = format!("<mark>{}</mark>", form.pattern);
-    let searched = controller::post::search(&db, form.pattern.clone(), per_page)
-        .await?
-        .into_iter()
-        .map(|mut post| {
-            // Replace with marked tag
-            if let Some(index) = post.title.to_lowercase().find(&form.pattern) {
-                post.title
-                    .replace_range(index..index + form.pattern.len(), &marked);
-            }
-            post
-        })
-        .collect::<Vec<_>>();
+    search_with_page(form, 1.into(), per_page, db, hbs).await
+}
+
+pub async fn search_with_page(
+    web::Form(form): web::Form<SearchFormData>,
+    page_number: web::Path<i32>,
+    per_page: Option<web::Query<u64>>,
+    db: web::Data<sea_orm::DatabaseConnection>,
+    hbs: web::Data<handlebars::Handlebars<'_>>,
+) -> impl actix_web::Responder {
+    let page_number = page_number.into_inner();
+    let per_page = per_page.map(web::Query::into_inner).unwrap_or(3);
+    // Query database
+    let (
+        mut searched,
+        sea_orm::ItemsAndPagesNumber {
+            number_of_items,
+            number_of_pages: _,
+        },
+    ) = controller::post::search(
+        &db,
+        form.pattern.clone(),
+        page_number as u64,
+        per_page as i32,
+    )
+    .await?;
+    // Replace with <mark> tag
+    searched.iter_mut().for_each(|post| {
+        if let Some(index) = post.title.to_lowercase().find(&form.pattern) {
+            let substr = &post.title[index..index + form.pattern.len()];
+            post.title.replace_range(
+                index..index + form.pattern.len(),
+                &format!("<mark>{}</mark>", substr),
+            );
+        }
+    });
+    // Pagination
     let pages = utils::paginate(
-        searched.len(),
-        3,
-        1,
+        number_of_items as usize,
+        per_page as usize,
+        page_number as usize,
         Some("<".to_string()),
         Some(">".to_string()),
     );
+    // Render html
+    let categories = controller::category::posts_count(&db).await?;
     let json = &serde_json::json!(
     {
         "searched": searched,
+        "pattern": form.pattern,
         "pages": pages,
         "meta": serde_json::json!({"categories": categories}),
     });

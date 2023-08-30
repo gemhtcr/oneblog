@@ -31,7 +31,10 @@
             <nav aria-label="...">
               <ul class="pagination">
                 {{#each pages}}
-                <li class="page-item"><a class="page-link {{#if this.active}}active{{/if}} {{#if this.disabled}}disabled{{/if}}" href="{{#if this.disabled}}#{{else}}/posts/page/{{this.page}}{{/if}}">{{this.display}}</a></li>
+                <form class="row g-3 needs-validation" novalidate action="/search/page/{{this.page}}" method="post">
+                <input type="hidden" name="pattern" value="{{../pattern}}" />
+                <li class="page-item"><button type="submit" class="btn page-link {{#if this.active}}active{{/if}} {{#if this.disabled}}disabled{{/if}}">{{this.display}}</button></li>
+                </form>
                 {{/each}}
               </ul>
             </nav><!-- End Disabled and active states -->

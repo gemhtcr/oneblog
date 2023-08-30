@@ -35,7 +35,14 @@ async fn main() -> Result<(), crate::error::OneBlogError> {
             ))
             .route("/", web::get().to(route::index::index))
             .route("/index.html", web::get().to(route::index::index))
-            .route("/search", web::post().to(route::index::search))
+            .service(
+                web::scope("/search")
+                    .route("", web::post().to(route::index::search))
+                    .route(
+                        "/page/{page_number}",
+                        web::post().to(route::index::search_with_page),
+                    ),
+            )
             .route("/posts/{post_id}", web::get().to(route::index::post_id))
             .route(
                 "/posts/page/{page_number}",
