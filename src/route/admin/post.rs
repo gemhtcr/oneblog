@@ -130,8 +130,9 @@ pub async fn posts(
 ) -> impl actix_web::Responder {
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
     let page = page.into_inner();
+    tracing::info!(?page);
     let paginator = controller::post::paginator(&db, per_page as u64);
-    let posts = paginator.fetch_page(page).await?;
+    let posts = paginator.fetch_page(page - 1).await?;
     let sea_orm::ItemsAndPagesNumber {
         number_of_items,
         number_of_pages: _,

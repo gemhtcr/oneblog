@@ -1,6 +1,6 @@
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
-use actix_web::{web, App, HttpServer};
+use actix_web::{web, web::scope, App, HttpServer};
 use actix_web_flash_messages::storage::CookieMessageStore;
 use actix_web_flash_messages::FlashMessagesFramework;
 use actix_web_lab::middleware::from_fn;
@@ -34,51 +34,52 @@ async fn main() -> Result<(), crate::error::OneBlogError> {
                 secret_key.clone(),
             ))
             .route("/", web::get().to(route::index::index))
-            .route("/index.html", web::get().to(route::index::index))
+            // Search
             .service(
                 web::scope("/search")
                     .route("", web::post().to(route::index::search))
                     .route(
-                        "/page/{page_number}",
+                        "/page/{page}",
                         web::post().to(route::index::search_with_page),
                     ),
             )
-            .route("/posts/{post_id}", web::get().to(route::index::post_id))
+            // Public
+            .route("/posts/{post}", web::get().to(route::index::post_id))
             .route("/posts/page/{page}", web::get().to(route::index::posts))
             .route(
-                "/posts/category/{category_id}/page/{page_number}",
+                "/posts/category/{category}/page/{page}",
                 web::get().to(route::index::posts_with_category),
             )
+            // Admin
             .service(
                 web::scope("/admin")
                     .wrap(from_fn(authentication::middleware::reject_anonymous_users))
                     .route("", web::get().to(route::admin::index::index))
-                    .route("/", web::get().to(route::admin::index::index))
                     .route("/dashboard", web::get().to(route::admin::index::index))
                     // page
                     .route(
-                        "/posts/page/{page_number}",
+                        "/posts/page/{page}",
                         web::get().to(route::admin::post::posts),
                     )
                     // edit
                     .route(
-                        "/posts/{post_id}/edit",
+                        "/posts/{post}/edit",
                         web::get().to(route::admin::post::edit_form),
                     )
-                    .route("/posts/{post_id}", web::post().to(route::admin::post::edit))
+                    .route("/posts/{post}", web::post().to(route::admin::post::edit))
                     // new
                     .route("/posts/new", web::get().to(route::admin::post::new_form))
                     .route("/posts", web::post().to(route::admin::post::new))
                     // delete
                     .route(
-                        "/posts/{post_id}/delete",
+                        "/posts/{post}/delete",
                         web::get().to(route::admin::post::delete),
                     )
                     // categories
                     .route("/categories", web::get().to(route::admin::category::index))
                     // categories, page
                     .route(
-                        "/categories/page/{page_number}",
+                        "/categories/page/{page}",
                         web::get().to(route::admin::category::page),
                     )
                     // categories, new_form
@@ -90,17 +91,17 @@ async fn main() -> Result<(), crate::error::OneBlogError> {
                     .route("/categories", web::post().to(route::admin::category::new))
                     // categories, edit_form
                     .route(
-                        "/categories/{category_id}/edit",
+                        "/categories/{category}/edit",
                         web::get().to(route::admin::category::edit_form),
                     )
                     // categories, edit
                     .route(
-                        "/categories/{category_id}",
+                        "/categories/{category}",
                         web::post().to(route::admin::category::edit),
                     )
                     // categories, delete
                     .route(
-                        "/categories/{category_id}/delete",
+                        "/categories/{category}/delete",
                         web::get().to(route::admin::category::delete),
                     )
                     // logout
