@@ -123,24 +123,26 @@ pub async fn new(
 }
 
 pub async fn posts(
-    page: web::Path<i32>,
+    page: web::Path<u64>,
     per_page: Option<web::Query<usize>>,
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
 ) -> impl actix_web::Responder {
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
-    let page = page.into_inner() as usize;
-    let counts = controller::post::count(&db).await?;
+    let page = page.into_inner();
+    let paginator = controller::post::paginator(&db, per_page as u64);
+    let posts = paginator.fetch_page(page).await?;
+    let sea_orm::ItemsAndPagesNumber {
+        number_of_items,
+        number_of_pages: _,
+    } = paginator.num_items_and_pages().await?;
     let pages = utils::paginate(
-        counts as usize,
+        number_of_items as usize,
         per_page,
-        page,
+        page as usize,
         Some("<".to_string()),
         Some(">".to_string()),
     );
-    let posts =
-        controller::post::offset_and_limit(&db, ((page - 1) * per_page) as u64, per_page as u64)
-            .await?;
     let categories = controller::category::posts_count(&db).await?;
     let html = hbs.render(
         "admin/index",

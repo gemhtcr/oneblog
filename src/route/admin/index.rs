@@ -18,9 +18,14 @@ pub async fn index(
     flash_messages: IncomingFlashMessages,
 ) -> impl actix_web::Responder {
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
-    let counts = controller::post::count(&db).await?;
+    let paginator = controller::post::paginator(&db, per_page as u64);
+    let posts = paginator.fetch_page(0).await?;
+    let sea_orm::ItemsAndPagesNumber {
+        number_of_items,
+        number_of_pages: _,
+    } = paginator.num_items_and_pages().await?;
     let pages = utils::paginate(
-        counts as usize,
+        number_of_items as usize,
         per_page,
         1,
         Some("<".to_string()),
@@ -33,7 +38,6 @@ pub async fn index(
             level: msg.level().to_string(),
         })
         .collect::<Vec<_>>();
-    let posts = controller::post::offset_and_limit(&db, 0, per_page as u64).await?;
     let categories = controller::category::posts_count(&db).await?;
     let html = hbs.render(
         "admin/index",

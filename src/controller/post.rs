@@ -47,6 +47,15 @@ pub async fn search(
     paginator.fetch_page(page - 1).await.map(|p| (p, info))
 }
 
+pub fn paginator(
+    db: &DatabaseConnection,
+    per_page: u64,
+) -> sea_orm::Paginator<'_, DatabaseConnection, SelectModel<Model>> {
+    Post::find()
+        .order_by_desc(post::Column::Updated)
+        .paginate(db, per_page)
+}
+
 // find is to find by id
 pub async fn find(db: &DatabaseConnection, id: i32) -> Result<Option<Model>, DbErr> {
     Post::find_by_id(id).one(db).await

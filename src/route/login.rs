@@ -25,12 +25,15 @@ pub async fn login_form(
 ) -> impl actix_web::Responder {
     let alerts = flash_messages
         .iter()
-        .map(|msg| MyFlashMessage {
-            content: msg.content().to_string(),
-            level: match msg.level() {
-                Level::Error => "danger".to_string(),
-                other => other.to_string(),
-            },
+        .map(|msg| {
+            println!("msg = {}", msg.content());
+            MyFlashMessage {
+                content: msg.content().to_string(),
+                level: match msg.level() {
+                    Level::Error => "danger".to_string(),
+                    other => other.to_string(),
+                },
+            }
         })
         .collect::<Vec<_>>();
     let html = hbs.render("login_form", &serde_json::json!({"alerts": alerts}))?;

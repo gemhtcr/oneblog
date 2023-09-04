@@ -9,27 +9,7 @@ pub async fn index(
     db: web::Data<sea_orm::DatabaseConnection>,
     hbs: web::Data<handlebars::Handlebars<'_>>,
 ) -> impl actix_web::Responder {
-    let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
-    let counts = controller::post::count(&db).await?;
-    let pages = utils::paginate(
-        counts as usize,
-        per_page,
-        1,
-        Some("<".to_string()),
-        Some(">".to_string()),
-    );
-    let posts = controller::post::offset_and_limit(&db, 0, per_page as u64).await?;
-    let categories = controller::category::posts_count(&db).await?;
-    let html = hbs.render(
-        "index",
-        &serde_json::json!({
-            "posts": posts,
-            "pages": pages,
-            "meta": serde_json::json!({"categories": categories}),
-        }),
-    )?;
-
-    OneBlogError::ok(utils::html(html))
+    posts(1.into(), per_page, db, hbs).await
 }
 
 pub async fn posts(
@@ -40,17 +20,19 @@ pub async fn posts(
 ) -> impl actix_web::Responder {
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
     let page = page.into_inner() as usize;
-    let counts = controller::post::count(&db).await?;
+    let paginator = controller::post::paginator(&db, per_page as u64);
+    let sea_orm::ItemsAndPagesNumber {
+        number_of_items,
+        number_of_pages: _,
+    } = paginator.num_items_and_pages().await?;
+    let posts = paginator.fetch_page(page as u64 - 1).await?;
     let pages = utils::paginate(
-        counts as usize,
+        number_of_items as usize,
         per_page,
         page,
         Some("<".to_string()),
         Some(">".to_string()),
     );
-    let posts =
-        controller::post::offset_and_limit(&db, ((page - 1) * per_page) as u64, per_page as u64)
-            .await?;
     let categories = controller::category::posts_count(&db).await?;
     let html = hbs.render(
         "index",
@@ -74,14 +56,10 @@ pub async fn posts_with_category(
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
     let db: &sea_orm::DatabaseConnection = &db;
     let count = controller::category::find_posts_count(db, category_id).await?;
-    let (category, posts) = controller::category::find_posts_with(
-        db,
-        category_id,
-        Some((page_number as u64 - 1) * per_page as u64),
-        Some(per_page as u64),
-    )
-    .await?
-    .unzip();
+    let (category, posts) =
+        controller::category::find_posts_with(db, category_id, page_number as u64, per_page as u64)
+            .await?
+            .unzip();
     let pages = utils::paginate(
         count as usize,
         per_page,

@@ -18,14 +18,16 @@ pub async fn index(
     hbs: web::Data<handlebars::Handlebars<'_>>,
     flash_messages: IncomingFlashMessages,
 ) -> impl actix_web::Responder {
-    let _a: usize = 1;
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
-    let categories =
-        controller::category::offset_and_limit(&db, Some(0), Some(per_page as u64)).await?;
-    let counts = controller::category::count(&db).await?;
-    tracing::info!(?counts);
+    let paginator = controller::category::paginator(&db, per_page as u64);
+    let categories = paginator.fetch_page(0).await?;
+    let sea_orm::ItemsAndPagesNumber {
+        number_of_items,
+        number_of_pages: _,
+    } = paginator.num_items_and_pages().await?;
+    tracing::info!(?number_of_items);
     let pages = utils::paginate(
-        counts as usize,
+        number_of_items as usize,
         per_page,
         1,
         Some("<".to_string()),
@@ -59,16 +61,14 @@ pub async fn page(
 ) -> impl actix_web::Responder {
     let per_page = per_page.map(|inner| inner.into_inner()).unwrap_or(3);
     let page = page.into_inner();
-    let categories = controller::category::offset_and_limit(
-        &db,
-        Some((page as u64 - 1) * per_page as u64),
-        Some(per_page as u64),
-    )
-    .await?;
-    let counts = controller::category::count(&db).await?;
-    tracing::info!(?counts);
+    let paginator = controller::category::paginator(&db, per_page as u64);
+    let categories = paginator.fetch_page(1).await?;
+    let sea_orm::ItemsAndPagesNumber {
+        number_of_items,
+        number_of_pages: _,
+    } = paginator.num_items_and_pages().await?;
     let pages = utils::paginate(
-        counts as usize,
+        number_of_items as usize,
         per_page,
         page as usize,
         Some("<".to_string()),

@@ -59,29 +59,32 @@ pub async fn find_posts(
     db: &DatabaseConnection,
     id: i32,
 ) -> Result<Option<(Model, Vec<post::Model>)>, DbErr> {
-    find_posts_with(db, id, None, None).await
+    // One category can have many posts (one-to-many)
+    Category::find_by_id(id)
+        .find_with_related(Post)
+        .all(db)
+        .await
+        .map(IntoIterator::into_iter)
+        .map(|mut inner| inner.next())
 }
 
+// The `page` is 1-dinex
 pub async fn find_posts_with(
     db: &DatabaseConnection,
     id: i32,
-    offset: Option<u64>,
-    limit: Option<u64>,
+    page: u64,
+    per_page: u64,
 ) -> Result<Option<(Model, Vec<post::Model>)>, DbErr> {
-    let cat = find(db, id).await?;
-    let fut: futures::future::OptionFuture<_> = cat
-        .map(|inner| async move {
-            inner
-                .find_related(Post)
-                .order_by_desc(post::Column::Updated)
-                .offset(offset)
-                .limit(limit)
-                .all(db)
-                .await
-                .map(|vec| (inner, vec))
-        })
-        .into();
-    fut.await.transpose()
+    let Some(cate) = find(db, id).await? else {
+        return Ok(None);
+    };
+
+    cate.find_related(Post)
+        .order_by_desc(post::Column::Updated)
+        .paginate(db, per_page)
+        .fetch_page(page - 1)
+        .await
+        .map(|inner| Some((cate, inner)))
 }
 
 pub async fn find_posts_count(db: &DatabaseConnection, id: i32) -> Result<u64, DbErr> {
@@ -90,7 +93,17 @@ pub async fn find_posts_count(db: &DatabaseConnection, id: i32) -> Result<u64, D
         return Ok(0);
     };
 
+    // A category can have many posts
     cat.find_related(Post).count(db).await
+}
+
+pub fn paginator(
+    db: &DatabaseConnection,
+    per_page: u64,
+) -> sea_orm::Paginator<DatabaseConnection, SelectModel<Model>> {
+    Category::find()
+        .order_by_desc(category::Column::Updated)
+        .paginate(db, per_page)
 }
 
 // offset_and_limit is to get paginated data based on offset and limit
