@@ -5,6 +5,7 @@ pub mod controller;
 pub mod database;
 pub mod entities;
 pub mod error;
+pub mod launch;
 pub mod route;
 pub mod session_state;
 pub mod telemetry;
