@@ -1,10 +1,13 @@
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
-use actix_web::{web, web::scope, App, HttpServer};
+use actix_web::{web, App, HttpServer};
 use actix_web_flash_messages::storage::CookieMessageStore;
 use actix_web_flash_messages::FlashMessagesFramework;
-use actix_web_lab::middleware::from_fn;
-use oneblog::*;
+use oneblog::database;
+use oneblog::error;
+use oneblog::route;
+use oneblog::telemetry;
+use oneblog::template_engine;
 use secrecy::ExposeSecret;
 use secrecy::Secret;
 
@@ -28,91 +31,18 @@ async fn main() -> Result<(), crate::error::OneBlogError> {
     let handlebars = template_engine::init()?;
     HttpServer::new(move || {
         App::new()
+            // Public
+            .configure(route::config::public)
+            // Admin
+            .configure(route::config::admin)
+            //.wrap(TracingLogger::default())
+            .app_data(web::Data::new(handlebars.clone()))
+            .app_data(web::Data::new(db.clone()))
             .wrap(message_framework.clone())
             .wrap(SessionMiddleware::new(
                 redis_store.clone(),
                 secret_key.clone(),
             ))
-            .route("/", web::get().to(route::index::index))
-            // Search
-            .service(
-                web::scope("/search")
-                    .route("", web::post().to(route::index::search))
-                    .route(
-                        "/page/{page}",
-                        web::post().to(route::index::search_with_page),
-                    ),
-            )
-            // Public
-            .route("/posts/{post}", web::get().to(route::index::post_id))
-            .route("/posts/page/{page}", web::get().to(route::index::posts))
-            .route(
-                "/posts/category/{category}/page/{page}",
-                web::get().to(route::index::posts_with_category),
-            )
-            // Admin
-            .service(
-                web::scope("/admin")
-                    .wrap(from_fn(authentication::middleware::reject_anonymous_users))
-                    .route("", web::get().to(route::admin::index::index))
-                    .route("/dashboard", web::get().to(route::admin::index::index))
-                    // page
-                    .route(
-                        "/posts/page/{page}",
-                        web::get().to(route::admin::post::posts),
-                    )
-                    // edit
-                    .route(
-                        "/posts/{post}/edit",
-                        web::get().to(route::admin::post::edit_form),
-                    )
-                    .route("/posts/{post}", web::post().to(route::admin::post::edit))
-                    // new
-                    .route("/posts/new", web::get().to(route::admin::post::new_form))
-                    .route("/posts", web::post().to(route::admin::post::new))
-                    // delete
-                    .route(
-                        "/posts/{post}/delete",
-                        web::get().to(route::admin::post::delete),
-                    )
-                    // categories
-                    .route("/categories", web::get().to(route::admin::category::index))
-                    // categories, page
-                    .route(
-                        "/categories/page/{page}",
-                        web::get().to(route::admin::category::page),
-                    )
-                    // categories, new_form
-                    .route(
-                        "/categories/new",
-                        web::get().to(route::admin::category::new_form),
-                    )
-                    // categories, new
-                    .route("/categories", web::post().to(route::admin::category::new))
-                    // categories, edit_form
-                    .route(
-                        "/categories/{category}/edit",
-                        web::get().to(route::admin::category::edit_form),
-                    )
-                    // categories, edit
-                    .route(
-                        "/categories/{category}",
-                        web::post().to(route::admin::category::edit),
-                    )
-                    // categories, delete
-                    .route(
-                        "/categories/{category}/delete",
-                        web::get().to(route::admin::category::delete),
-                    )
-                    // logout
-                    .route("/logout", web::get().to(route::admin::logout::logout)),
-            )
-            //.wrap(TracingLogger::default())
-            .route("/login", web::get().to(route::login::login_form))
-            .route("/login", web::post().to(route::login::login))
-            .service(actix_files::Files::new("/assets", "assets/").show_files_listing())
-            .app_data(web::Data::new(handlebars.clone()))
-            .app_data(web::Data::new(db.clone()))
     })
     .bind(("127.0.0.1", 8080))?
     .run()
