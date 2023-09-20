@@ -88,8 +88,8 @@ pub async fn find_posts_with(
 }
 
 pub async fn find_posts_count(db: &DatabaseConnection, id: i32) -> Result<u64, DbErr> {
-    let Some(cat) = find(db, id).await?
-    else { // Note that we return 0 to simplify edge cases if model doesn't exist
+    let Some(cat) = find(db, id).await? else {
+        // Note that we return 0 to simplify edge cases if model doesn't exist
         return Ok(0);
     };
 
