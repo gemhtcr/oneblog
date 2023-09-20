@@ -15,7 +15,6 @@ jobs:
   # This workflow contains a single job called "build"
   lints:
     name: Lints
-      #    runs-on: ubuntu-latest
           runs-on: gem
       
     steps:
