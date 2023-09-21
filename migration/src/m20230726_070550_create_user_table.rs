@@ -1,4 +1,6 @@
 use sea_orm_migration::prelude::*;
+//use sea_orm_migration::sea_orm::{entity::*, query::*};
+
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -30,7 +32,21 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
-        let db = manager.get_connection();
+       let insert = Query::insert()
+            .into_table(Users::Table)
+            .columns([Users::UserId, Users::Username, Users::PasswordHash])
+            .values_panic(
+				[
+					"641d26f6-af5f-46dd-8df5-e3e7d0812f9d".into(),
+					"admin".into(),
+					"$argon2id$v=19$m=15000,t=2,p=1$PQmIUC+TNBPgeUwipUHxzQ$9Fi4antDN1jpGK7wU+TQOY9nKcldj8par4TXhdsQr6Q".into()
+				],
+			)
+            .to_owned();
+
+        manager.exec_stmt(insert).await?;
+
+/*
         let stmt = sea_orm::Statement::from_sql_and_values(
 			manager.get_database_backend(),
 			r#"INSERT INTO `users` (`user_id`, `username`, `password_hash`) VALUES(?, ?, ?)"#,
@@ -41,6 +57,7 @@ impl MigrationTrait for Migration {
 			],
 		);
         db.execute(stmt).await?;
+*/
 
         Ok(())
     }

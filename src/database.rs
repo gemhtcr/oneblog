@@ -2,7 +2,9 @@ use sea_orm::ConnectOptions;
 use sea_orm::Database;
 use sea_orm::DatabaseConnection;
 
-const DATABASE_URL: &str = "mysql://root@127.0.0.1:3306/oneblog";
+//const DATABASE_URL: &str = "mysql://root@127.0.0.1:3306/oneblog";
+const DATABASE_URL: &str = "postgres://gembrightstonehung@127.0.0.1:5432/oneblog";
+
 pub async fn init() -> Result<DatabaseConnection, sea_orm::DbErr> {
     // max connection is based on hardware core number
     let ret = std::thread::available_parallelism()
