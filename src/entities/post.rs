@@ -11,8 +11,8 @@ pub struct Model {
     pub title: String,
     pub description: String,
     pub category_name: Option<String>,
-    pub created: DateTimeUtc,
-    pub updated: DateTimeUtc,
+    pub created: DateTime,
+    pub updated: DateTime,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

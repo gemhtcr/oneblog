@@ -11,8 +11,8 @@ use sea_orm::*;
 pub async fn create(db: &DatabaseConnection, name: &str) -> Result<Model, DbErr> {
     ActiveModel {
         name: ActiveValue::Set(name.to_string()),
-        updated: ActiveValue::Set(chrono::offset::Utc::now()),
-        created: ActiveValue::Set(chrono::offset::Utc::now()),
+        updated: ActiveValue::Set(chrono::offset::Local::now().naive_local()),
+        created: ActiveValue::Set(chrono::offset::Local::now().naive_local()),
         ..Default::default()
     }
     .insert(db)
@@ -135,7 +135,7 @@ pub async fn update(db: &DatabaseConnection, id: i32, name: &str) -> Result<Mode
     ActiveModel {
         id: ActiveValue::Unchanged(id),
         name: ActiveValue::Set(name.to_string()),
-        updated: ActiveValue::Set(chrono::offset::Utc::now()),
+        updated: ActiveValue::Set(chrono::offset::Local::now().naive_local()),
         ..Default::default()
     }
     .update(db)

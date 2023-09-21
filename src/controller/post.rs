@@ -15,8 +15,9 @@ pub async fn create(
         title: ActiveValue::Set(title.to_string()),
         description: ActiveValue::Set(description.to_string()),
         category_name: ActiveValue::Set(category_name),
-        updated: ActiveValue::Set(chrono::offset::Utc::now()),
-        created: ActiveValue::Set(chrono::offset::Utc::now()),
+        //updated: ActiveValue::Set(chrono::offset::Utc::now()),
+        updated: ActiveValue::Set(chrono::offset::Local::now().naive_local()),
+        created: ActiveValue::Set(chrono::offset::Local::now().naive_local()),
         ..Default::default()
     }
     .insert(db)
@@ -104,7 +105,7 @@ pub async fn update(
         title: ActiveValue::Set(title.to_string()),
         description: ActiveValue::Set(description.to_string()),
         category_name: ActiveValue::Set(category_name),
-        updated: ActiveValue::Set(chrono::offset::Utc::now()),
+        updated: ActiveValue::Set(chrono::offset::Local::now().naive_local()),
         ..Default::default()
     }
     .update(db)
